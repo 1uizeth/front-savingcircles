@@ -91,7 +91,12 @@ export default function AuctionPage() {
       <DesktopSidebar />
 
       <div className="md:ml-[240px] pb-16 md:pb-0">
-        <ContextBar location={`ROUND 3 - AUCTION (${circleId})`} phase="auction" nextRoundSeconds={nextRoundSeconds} />
+        <ContextBar
+          location={`ROUND 3 - AUCTION (${circleId})`}
+          phase="auction"
+          nextRoundSeconds={nextRoundSeconds}
+          circleId={circleId}
+        />
 
         {/* Demo Controls */}
         {showDemo && (

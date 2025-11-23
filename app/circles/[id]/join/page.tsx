@@ -65,7 +65,7 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
         <DesktopSidebar />
 
         <div className="flex-1 md:ml-60">
-          <ContextBar location={`JOIN ${circleName}`} nextRoundSeconds={nextRoundSeconds} />
+          <ContextBar location={`JOIN ${circleName}`} nextRoundSeconds={nextRoundSeconds} circleId={params.id} />
 
           <main className="pb-16 md:pb-0">
             <DialogPrimitive.Root open={step === "confirm"} onOpenChange={(open) => !open && router.back()}>

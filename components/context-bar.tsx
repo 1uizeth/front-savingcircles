@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import type React from "react"
+import { useRouter } from "next/navigation"
 
 import { useTimer } from "@/contexts/timer-context"
 
@@ -8,11 +9,13 @@ interface ContextBarProps {
   location: string
   phase?: "contribution" | "auction" | "drawing" | "result"
   nextRoundSeconds?: number
+  circleId?: string
 }
 
-export function ContextBar({ location, phase = "auction", nextRoundSeconds }: ContextBarProps) {
+export function ContextBar({ location, phase = "auction", nextRoundSeconds, circleId }: ContextBarProps) {
   const [timeLeft, setTimeLeft] = useState(nextRoundSeconds || 0)
   const { skipToNextRound } = useTimer()
+  const router = useRouter()
 
   useEffect(() => {
     if (!nextRoundSeconds) return
@@ -41,15 +44,24 @@ export function ContextBar({ location, phase = "auction", nextRoundSeconds }: Co
     result: "bg-muted text-muted-foreground border-muted-foreground",
   }
 
+  const handleCountdownClick = () => {
+    if (circleId) {
+      router.push(`/circles/${circleId}/result`)
+    }
+  }
+
   return (
-    <div className={`h-16 ${phaseStyles[phase]} flex items-center justify-between px-4 md:px-6 border-b-2`}>
+    <div className={`h-16 ${phaseStyles[phase]} flex items-center justify-between px-4 md:px-6 border-2 border-b-0`}>
       {/* Left: Location */}
       <h2 className="text-base font-bold leading-tight">{location}</h2>
 
       {/* Right: Countdown timer with skip button */}
       {nextRoundSeconds !== undefined && (
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="text-right">
+          <div
+            onClick={circleId ? handleCountdownClick : undefined}
+            className={`text-right ${circleId ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+          >
             <div className="text-[10px] md:text-xs mb-0.5">NEXT ROUND IN:</div>
             <div className="text-xs md:text-sm font-mono font-bold">{formatCountdown(timeLeft)}</div>
           </div>

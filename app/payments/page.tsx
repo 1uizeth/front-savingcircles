@@ -67,9 +67,9 @@ function CirclePaymentCard({
   }
 
   const installmentAmount = contractData.installmentSize
-  const displayRound = contractData.currRound
-  const totalRounds = contractData.numRounds
-  const goalAmount = contractData.installmentSize * contractData.numRounds
+  const displayRound = contractData.numRounds
+  const totalRounds = contractData.currRound
+  const goalAmount = contractData.installmentSize * contractData.currRound
   const paidMembers = Math.floor(contractData.numUsers * 0.8)
   const totalMembers = contractData.numUsers
 

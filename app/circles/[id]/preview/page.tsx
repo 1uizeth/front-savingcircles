@@ -18,8 +18,9 @@ export default function CirclePreviewPage() {
   const { nextRoundSeconds } = useTimer()
   const { isJoined, joinCircle, tokens, hasBidForCircle, getBidForCircle } = useUser()
   const [showModal, setShowModal] = useState(false)
-  const [step, setStep] = useState<"confirm" | "success">("confirm")
+  const [step, setStep] = useState<"confirm" | "loading" | "success">("confirm")
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [showSuccessStatus, setShowSuccessStatus] = useState(false)
 
   const contractAddress = circleId
   const {
@@ -29,9 +30,9 @@ export default function CirclePreviewPage() {
   } = useCircleContractData(contractAddress)
 
   const installmentAmount = contractData?.installmentSize ?? 0
-  const totalRounds = contractData?.numRounds ?? 10
-  const displayRound = contractData ? Math.max(1, contractData.currRound + 1) : 1
-  const prizeAmount = contractData ? contractData.installmentSize * contractData.numRounds : 0
+  const totalRounds = contractData?.currRound ?? 10
+  const displayRound = contractData ? Math.max(1, contractData.numRounds + 1) : 1
+  const prizeAmount = contractData ? contractData.installmentSize * contractData.currRound : 0
   const membersCount = contractData?.numUsers ?? 0
 
   const userIsJoined = isJoined(circleId)
@@ -57,13 +58,22 @@ export default function CirclePreviewPage() {
   }
 
   const handleConfirm = () => {
+    setStep("loading")
     joinCircle(circleId)
-    setStep("success")
+    setTimeout(() => {
+      setStep("success")
+    }, 2000)
   }
 
   const handleComplete = () => {
     setShowModal(false)
-    router.refresh()
+    setTimeout(() => {
+      setShowSuccessStatus(true)
+      setTimeout(() => {
+        setShowSuccessStatus(false)
+      }, 3000)
+    }, 2000)
+    router.push(`/circles/${circleId}/preview?justJoined=true`)
   }
 
   const totalBidsAmount = contractData?.totalBids ?? 1000
@@ -193,7 +203,15 @@ export default function CirclePreviewPage() {
               </div>
 
               <div className="md:text-right">
-                <div className="text-xs uppercase text-gray-500 mb-2">NEXT ROUND IN</div>
+                <div className="text-xs uppercase text-gray-500 mb-2 flex items-center justify-start md:justify-end gap-2">
+                  <span>NEXT ROUND IN</span>
+                  <button
+                    onClick={() => router.push(`/circles/${circleId}/result`)}
+                    className="text-xs opacity-40 hover:opacity-100 underline transition-opacity"
+                  >
+                    NOW
+                  </button>
+                </div>
                 <div className="text-4xl font-bold">{formatTime(nextRoundSeconds)}</div>
               </div>
             </div>
@@ -221,7 +239,11 @@ export default function CirclePreviewPage() {
             </div>
             <div className="p-6">
               <div className="text-xs mb-1">YOUR STATUS</div>
-              <div className="text-3xl font-bold">{userIsJoined ? "MEMBER" : "NOT JOINED"}</div>
+              <div
+                className={`text-3xl font-bold transition-colors duration-500 ${showSuccessStatus ? "text-green-500" : ""}`}
+              >
+                {userIsJoined ? "MEMBER" : "NOT JOINED"}
+              </div>
             </div>
           </div>
 
@@ -273,7 +295,7 @@ export default function CirclePreviewPage() {
           <div className="fixed inset-0 z-[89] bg-black/95" />
           <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
             {step === "confirm" && (
-              <div className="bg-white border-4 border-black shadow-2xl">
+              <div className="bg-white border-2 border-black shadow-2xl">
                 <div className="h-14 bg-white flex items-center px-6 border-b-2 border-black">
                   <h2 className="text-lg font-bold">JOIN CIRCLE</h2>
                 </div>
@@ -318,27 +340,50 @@ export default function CirclePreviewPage() {
               </div>
             )}
 
-            {step === "success" && (
-              <div className="bg-white border-4 border-black shadow-2xl p-8 text-center space-y-6">
+            {step === "loading" && (
+              <div className="bg-white border-2 border-black shadow-2xl p-12 text-center space-y-6 min-w-[400px]">
                 <div className="flex justify-center">
-                  <div className="w-16 h-16 bg-green-500 flex items-center justify-center text-4xl text-white font-bold border-2 border-black">
-                    ✓
-                  </div>
+                  <div className="w-16 h-16 border-2 border-black border-t-accent animate-spin rounded-full" />
                 </div>
-
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-bold">YOU'RE NOW A MEMBER</h1>
-                  <p className="text-lg">Welcome to the ${prizeAmount.toLocaleString()} Circle</p>
+                  <h2 className="text-2xl font-bold">JOINING CIRCLE</h2>
+                  <p className="text-sm text-gray-600">Please wait while we process your request...</p>
+                </div>
+              </div>
+            )}
+
+            {step === "success" && (
+              <div className="bg-white border-2 border-black shadow-2xl max-w-lg w-full">
+                <div className="bg-accent text-accent-foreground p-6 border-b-2 border-black text-center">
+                  <h1 className="text-3xl font-bold mb-2">You're In!</h1>
+                  <p className="text-lg opacity-90">Part of a circle to save ${prizeAmount.toLocaleString()} </p>
                 </div>
 
-                <div className="pt-4">
-                  <p className="text-sm">Next: Pay your first installment to enter Round {displayRound}</p>
-                </div>
+                <div className="p-6 space-y-6 bg-white">
+                  <div className="grid gap-4">
+                    <div className="border-2 border-black p-4 bg-gray-50">
+                      <div className="text-xs uppercase text-gray-500 mb-1">Circle Details</div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Installment Amount</span>
+                        <span className="text-lg font-bold">{installmentAmount} USDC</span>
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="text-sm font-medium">Total Rounds</span>
+                        <span className="text-lg font-bold">{totalRounds}</span>
+                      </div>
+                    </div>
 
-                <div className="space-y-2 pt-6">
+                    <div className="border-2 border-accent bg-accent/10 p-4">
+                      <div className="text-xs uppercase text-accent-foreground/70 mb-1">Next Step</div>
+                      <p className="text-sm font-medium">
+                        Pay your first {installmentAmount} USDC installment to enter Round {displayRound}
+                      </p>
+                    </div>
+                  </div>
+
                   <button
                     onClick={handleComplete}
-                    className="w-full h-12 bg-black text-white font-bold border-2 border-black hover:bg-gray-900"
+                    className="w-full h-14 bg-black text-white font-bold text-lg border-2 border-black hover:bg-gray-900 transition-colors"
                   >
                     CONTINUE
                   </button>

@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
-import ContextBar from "@/components/context-bar"
 
 // Mock result data (would come from API/blockchain)
 const getResultData = (id: string, outcome: "winner" | "loser") => {
@@ -53,11 +52,10 @@ export default function ResultPage() {
     <div className="min-h-screen flex bg-white">
       <DesktopSidebar />
 
+      {/* Main content area */}
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-        <ContextBar location={`ROUND ${result.round} — RESULT`} phase="result" />
-
         {/* Demo Controls - Fixed bottom on mobile, top-right on desktop */}
-        <div className="fixed bottom-20 left-0 right-0 md:bottom-auto md:top-20 md:right-4 md:left-auto z-30 flex gap-2 p-4 md:p-0 bg-white md:bg-transparent border-t-2 md:border-0 border-black">
+        <div className="fixed bottom-20 left-0 right-0 md:bottom-auto md:top-4 md:right-4 md:left-auto z-30 flex gap-2 p-4 md:p-0 bg-white md:bg-transparent border-t-2 md:border-0 border-black">
           <button
             onClick={() => setDemoOutcome("winner")}
             className={`flex-1 md:flex-none px-4 py-2 text-xs font-bold border-2 border-black ${
@@ -83,7 +81,6 @@ export default function ResultPage() {
               className="flex flex-col items-center justify-center border-b-2 border-black bg-[#00FF00] bg-opacity-20"
               style={{ height: "240px" }}
             >
-              <div className="text-6xl mb-4">🎉</div>
               <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-4 px-4">YOU WERE SELECTED</div>
               <div className="text-lg md:text-xl font-mono">ROUND {result.round}</div>
             </div>
@@ -142,7 +139,6 @@ export default function ResultPage() {
               className="flex flex-col items-center justify-center border-b-2 border-black bg-gray-200 bg-opacity-30"
               style={{ height: "200px" }}
             >
-              <div className="w-12 h-12 md:w-16 md:h-16 border-2 border-black rounded-full mb-6"></div>
               <div className="text-xl md:text-2xl lg:text-3xl font-bold text-center px-4">NOT SELECTED THIS ROUND</div>
             </div>
 

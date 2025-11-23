@@ -89,7 +89,7 @@ export default function HomePage() {
   }
 
   const userIsJoined = isJoined(CIRCLE_CONTRACT_ADDRESS)
-  const goalAmount = contractData.installmentSize * contractData.numRounds
+  const goalAmount = contractData.installmentSize * contractData.currRound
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -106,7 +106,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
                 <div className="flex-1">
                   <div className="text-sm mb-2">
-                    ROUND {contractData.currRound} OF {contractData.numRounds}
+                    ROUND {contractData.numRounds} OF {contractData.currRound}
                     {userIsJoined && <span className="ml-2 text-green-600">● JOINED</span>}
                   </div>
                   <div className="text-3xl sm:text-4xl font-bold">${goalAmount}</div>
@@ -126,7 +126,7 @@ export default function HomePage() {
                 <div className="text-left sm:text-right">
                   <div className="text-xs mb-1">MEMBERS</div>
                   <div className="text-lg sm:text-xl font-bold">
-                    {contractData.numUsers}/{contractData.numRounds}
+                    {contractData.numUsers}/{contractData.currRound}
                   </div>
                 </div>
               </div>

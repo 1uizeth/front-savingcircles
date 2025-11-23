@@ -67,15 +67,15 @@ export function AuctionFlowModal({ open, onOpenChange, preselectedCircleId }: Au
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 bg-black/95 z-[89]" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto bg-white border-2 border-black z-[90]">
+        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-2xl max-h-[85vh] bg-white border-2 border-black z-[90]">
           {step === "select" && (
             <>
-              <div className="bg-white border-b-2 border-black p-6">
+              <div className="bg-white border-b-2 border-black p-4">
                 <h2 className="text-2xl font-bold">SELECT CIRCLE TO BID ON</h2>
               </div>
 
-              <div className="p-6">
-                <p className="mb-6">Choose which circle you want to place your bid on for the current round</p>
+              <div className="p-4">
+                <p className="mb-4">Choose which circle you want to place your bid on for the current round</p>
 
                 <div className="space-y-4">
                   {joinedCircles.map((circleAddress) => (
@@ -98,24 +98,24 @@ export function AuctionFlowModal({ open, onOpenChange, preselectedCircleId }: Au
 
           {step === "bid" && (
             <>
-              <div className="bg-white border-b-2 border-black p-6">
+              <div className="bg-white border-b-2 border-black p-4">
                 <h2 className="text-2xl font-bold">PLACE YOUR BID</h2>
               </div>
 
-              <div className="p-6 space-y-6">
+              <div className="p-4 space-y-4">
                 <div>
-                  <p className="text-sm mb-2">{mockCircleData.name}</p>
+                  <p className="text-sm mb-1">{mockCircleData.name}</p>
                   <p className="text-lg font-bold">Round {mockCircleData.round} Auction</p>
                 </div>
 
-                <div className="border-t-2 border-black pt-6">
+                <div className="border-t-2 border-black pt-4">
                   <label className="text-sm font-bold mb-2 block">BID AMOUNT</label>
                   <input
                     type="number"
                     value={bidAmount}
                     onChange={(e) => setBidAmount(e.target.value)}
                     placeholder="Enter amount"
-                    className="w-full h-16 px-4 text-3xl font-bold text-right border-2 border-black"
+                    className="w-full h-14 px-4 text-2xl font-bold text-right border-2 border-black"
                     max={tokens}
                   />
                   <div className="flex justify-between items-center mt-1">
@@ -127,34 +127,34 @@ export function AuctionFlowModal({ open, onOpenChange, preselectedCircleId }: Au
                 <div className="grid grid-cols-4 gap-2">
                   <button
                     onClick={() => handleQuickBid(0.25)}
-                    className="h-10 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
+                    className="h-9 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
                   >
                     25%
                   </button>
                   <button
                     onClick={() => handleQuickBid(0.5)}
-                    className="h-10 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
+                    className="h-9 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
                   >
                     50%
                   </button>
                   <button
                     onClick={() => handleQuickBid(0.75)}
-                    className="h-10 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
+                    className="h-9 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
                   >
                     75%
                   </button>
                   <button
                     onClick={() => handleQuickBid(1)}
-                    className="h-10 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
+                    className="h-9 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold"
                   >
                     MAX
                   </button>
                 </div>
 
                 {bidAmount && (
-                  <div className="border-2 border-black p-4 bg-gray-50">
-                    <div className="text-sm font-bold mb-3">SIMULATION</div>
-                    <div className="space-y-2 text-sm">
+                  <div className="border-2 border-black p-3 bg-gray-50">
+                    <div className="text-sm font-bold mb-2">SIMULATION</div>
+                    <div className="space-y-1.5 text-sm">
                       <div className="flex justify-between">
                         <span>Your weight:</span>
                         <span className="font-bold">{newWeight.toFixed(1)}%</span>
@@ -163,7 +163,7 @@ export function AuctionFlowModal({ open, onOpenChange, preselectedCircleId }: Au
                         <span>Remaining balance:</span>
                         <span className="font-bold">{remainingBalance} SCT</span>
                       </div>
-                      <div className="flex justify-between pt-2 border-t border-black">
+                      <div className="flex justify-between pt-1.5 border-t border-black">
                         <span>Total tokens bid:</span>
                         <span className="font-bold">{newBid} SCT</span>
                       </div>
@@ -171,7 +171,7 @@ export function AuctionFlowModal({ open, onOpenChange, preselectedCircleId }: Au
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-4">
+                <div className="flex gap-2 pt-3">
                   {!preselectedCircleId && (
                     <button
                       onClick={() => {
@@ -201,11 +201,11 @@ export function AuctionFlowModal({ open, onOpenChange, preselectedCircleId }: Au
 
           {step === "success" && (
             <>
-              <div className="bg-white border-b-2 border-black p-6">
+              <div className="bg-white border-b-2 border-black p-4">
                 <h2 className="text-2xl font-bold">BID PLACED SUCCESSFULLY</h2>
               </div>
 
-              <div className="p-8 text-center space-y-6">
+              <div className="p-6 text-center space-y-4">
                 <div className="flex justify-center">
                   <div className="w-16 h-16 bg-green-500 flex items-center justify-center text-4xl text-white font-bold border-2 border-black">
                     ✓
@@ -219,7 +219,7 @@ export function AuctionFlowModal({ open, onOpenChange, preselectedCircleId }: Au
                   </p>
                 </div>
 
-                <div className="border-2 border-black p-4 bg-gray-50">
+                <div className="border-2 border-black p-3 bg-gray-50">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Your weight:</span>

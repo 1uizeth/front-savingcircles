@@ -114,29 +114,43 @@ export default function CirclesPage() {
           </div>
         ) : (
           <div className="divide-y-2 divide-black">
-            <Link
-              href={`/circles/${CIRCLE_CONTRACT_ADDRESS}/preview`}
-              className="block bg-white hover:bg-gray-100 transition-colors border-b-2 border-black"
-            >
+            <div className="block bg-white border-b-2 border-black">
               <div className="p-4 sm:p-8">
                 {/* Header Row - Round and Goal */}
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
-                  <div className="flex-1">
+                  <Link
+                    href={`/circles/${CIRCLE_CONTRACT_ADDRESS}/preview`}
+                    className="flex-1 hover:opacity-70 transition-opacity"
+                  >
                     <div className="text-sm mb-2">
-                      ROUND {contractData.currRound} OF {contractData.numRounds}
+                      ROUND {contractData.numRounds} OF {contractData.currRound}
                     </div>
                     <div className="text-3xl sm:text-4xl font-bold">
-                      ${contractData.installmentSize * contractData.numRounds}
+                      ${contractData.installmentSize * contractData.currRound}
                     </div>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <div className="text-sm mb-1">NEXT ROUND IN</div>
+                  </Link>
+                  <div
+                    onClick={() => router.push(`/circles/${CIRCLE_CONTRACT_ADDRESS}/result`)}
+                    className="text-left sm:text-right cursor-pointer hover:opacity-70 transition-opacity"
+                  >
+                    <div className="text-sm mb-1 flex items-center justify-start sm:justify-end gap-2">
+                      <span>NEXT ROUND IN</span>
+                      <Link
+                        href={`/circles/${CIRCLE_CONTRACT_ADDRESS}/result`}
+                        className="text-xs opacity-40 hover:opacity-100 underline transition-opacity"
+                      >
+                        NOW
+                      </Link>
+                    </div>
                     <div className="text-xl sm:text-2xl font-bold">{formatTime(nextRoundSeconds)}</div>
                   </div>
                 </div>
 
                 {/* Bottom Row - Installment and Members aligned at the top */}
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <Link
+                  href={`/circles/${CIRCLE_CONTRACT_ADDRESS}/preview`}
+                  className="flex flex-col sm:flex-row items-start justify-between gap-4 hover:opacity-70 transition-opacity"
+                >
                   <div>
                     <div className="text-xs mb-1">INSTALLMENT</div>
                     <div className="text-lg sm:text-xl font-bold">${contractData.installmentSize}</div>
@@ -145,9 +159,9 @@ export default function CirclesPage() {
                     <div className="text-xs mb-1">MEMBERS</div>
                     <div className="text-lg sm:text-xl font-bold">{contractData.numUsers}</div>
                   </div>
-                </div>
+                </Link>
               </div>
-            </Link>
+            </div>
           </div>
         )}
       </main>
