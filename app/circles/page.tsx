@@ -93,7 +93,7 @@ export default function CirclesPage() {
         ) : (
           <div className="divide-y-2 divide-black">
             <Link
-              href={`/circles/${CIRCLE_CONTRACT_ADDRESS}`}
+              href={`/circles/${CIRCLE_CONTRACT_ADDRESS}/preview`}
               className="block bg-white hover:bg-gray-100 transition-colors border-b-2 border-black"
             >
               <div className="p-4 sm:p-8">
@@ -111,12 +111,6 @@ export default function CirclesPage() {
                     <div className="text-sm mb-1">NEXT ROUND IN</div>
                     <div className="text-xl sm:text-2xl font-bold">{formatTime(nextRoundSeconds)}</div>
                   </div>
-                </div>
-
-                {/* Contract Address */}
-                <div className="mb-6">
-                  <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">CONTRACT</div>
-                  <div className="text-xs font-mono break-all">{CIRCLE_CONTRACT_ADDRESS}</div>
                 </div>
 
                 {/* Bottom Row - Installment and Members aligned at the top */}

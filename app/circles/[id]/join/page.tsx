@@ -7,7 +7,7 @@ import { useUser } from "@/contexts/user-context"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
 import ContextBar from "@/components/context-bar"
-import { getCircleById } from "@/lib/mock-data"
+import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
 
 export default function JoinCirclePage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -15,9 +15,18 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
   const { joinCircle, isJoined } = useUser()
   const [step, setStep] = useState<"confirm" | "success">("confirm")
 
-  const circle = getCircleById(params.id)
+  const contractAddress = params.id
+  const { data: contractData, loading, error } = useCircleContractData(contractAddress)
 
-  if (!circle) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-2xl font-bold">LOADING CIRCLE...</div>
+      </div>
+    )
+  }
+
+  if (error || !contractData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-2xl font-bold">CIRCLE NOT FOUND</div>
@@ -30,17 +39,23 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
     return null
   }
 
+  const goal = contractData.installmentSize * contractData.numRounds
+  const installment = contractData.installmentSize
+  const totalRounds = contractData.numRounds
+  const ticketPrice = 10 // Fixed ticket price in USDC
+  const circleName = contractData.name || "Savings Circle"
+
   const handleConfirm = () => {
     joinCircle(params.id)
     setStep("success")
   }
 
   const handlePayNow = () => {
-    router.push(`/circles/${params.id}`)
+    router.push(`/circles/${params.id}/preview`)
   }
 
   const handlePayLater = () => {
-    router.push(`/circles/${params.id}`)
+    router.push(`/circles/${params.id}/preview`)
   }
 
   return (
@@ -49,7 +64,7 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
         <DesktopSidebar />
 
         <div className="flex-1 md:ml-60">
-          <ContextBar location={`JOIN ${circle.name}`} nextRoundSeconds={nextRoundSeconds} />
+          <ContextBar location={`JOIN ${circleName}`} nextRoundSeconds={nextRoundSeconds} />
 
           <main className="pb-16 md:pb-0">
             {step === "confirm" && (
@@ -63,21 +78,21 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
                   <div className="p-6 space-y-6">
                     <div>
                       <p className="text-sm mb-2">You're buying a ticket to:</p>
-                      <p className="text-2xl font-bold">{circle.name}</p>
+                      <p className="text-2xl font-bold">{circleName}</p>
                     </div>
 
                     <div className="border-t-2 border-black pt-4 space-y-3">
                       <div className="flex justify-between">
                         <span className="font-bold">Ticket Price:</span>
-                        <span className="font-bold">{circle.ticketPrice} USDC</span>
+                        <span className="font-bold">{ticketPrice} USDC</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Installment per round:</span>
-                        <span>{circle.installment} USDC</span>
+                        <span>{installment} USDC</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Total rounds:</span>
-                        <span>{circle.totalRounds}</span>
+                        <span>{totalRounds}</span>
                       </div>
                     </div>
 
@@ -115,11 +130,13 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
 
                   <div className="space-y-2">
                     <h1 className="text-3xl font-bold">YOU'RE NOW A MEMBER</h1>
-                    <p className="text-lg">Welcome to {circle.name}</p>
+                    <p className="text-lg">Welcome to {circleName}</p>
                   </div>
 
                   <div className="pt-4">
-                    <p className="text-sm">Next: Pay your first installment to enter Round {circle.round}</p>
+                    <p className="text-sm">
+                      Next: Pay your first installment to enter Round {Math.max(1, contractData.currRound + 1)}
+                    </p>
                   </div>
 
                   <div className="space-y-2 pt-6">

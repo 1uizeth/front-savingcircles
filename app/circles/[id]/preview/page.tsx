@@ -32,10 +32,7 @@ export default function CirclePreviewPage() {
   const prizeAmount = contractData ? contractData.installmentSize * contractData.numRounds : 0
   const membersCount = contractData?.numUsers ?? 0
 
-  const formatAmount = (value?: number, unit = "USDC") => {
-    if (value === undefined || Number.isNaN(value)) return "—"
-    return `${value.toLocaleString()} ${unit}`
-  }
+  const userIsJoined = isJoined(circleId)
 
   const formatTime = (seconds: number) => {
     if (seconds >= 24 * 60 * 60) {
@@ -61,7 +58,8 @@ export default function CirclePreviewPage() {
   }
 
   const handleComplete = () => {
-    router.push(`/circles/${circleId}`)
+    setShowModal(false)
+    router.refresh()
   }
 
   if (!circleId) {
@@ -91,19 +89,12 @@ export default function CirclePreviewPage() {
     )
   }
 
-  // If already joined, redirect to dashboard
-  if (isJoined(circleId)) {
-    router.push(`/circles/${circleId}`)
-    return null
-  }
-
   return (
     <>
       <div className="min-h-screen flex bg-white">
         <DesktopSidebar />
 
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-          {/* Updated ContextBar */}
           <ContextBar location="CIRCLE DETAILS" />
 
           <div className="bg-[#2D4B8E] text-white p-4 border-b-2 border-black">
@@ -113,7 +104,6 @@ export default function CirclePreviewPage() {
 
           <div className="border-b-2 border-black p-8">
             <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8">
-              {/* Left side: Round and Goal */}
               <div className="flex-1">
                 <div className="text-sm uppercase text-gray-500 mb-2">
                   ROUND {displayRound} OF {totalRounds}
@@ -121,7 +111,6 @@ export default function CirclePreviewPage() {
                 <div className="text-6xl font-bold">${prizeAmount.toLocaleString()}</div>
               </div>
 
-              {/* Right side: Next Round In countdown */}
               <div className="md:text-right">
                 <div className="text-xs uppercase text-gray-500 mb-2">NEXT ROUND IN</div>
                 <div className="text-4xl font-bold">{formatTime(nextRoundSeconds)}</div>
@@ -129,7 +118,6 @@ export default function CirclePreviewPage() {
             </div>
           </div>
 
-          {/* Primary Stats Zone */}
           <div className="grid grid-cols-1 md:grid-cols-2 divide-y-2 md:divide-y-0 md:divide-x-2 divide-black border-b-2 border-black">
             <div className="p-8">
               <div className="text-sm mb-2">INSTALLMENT</div>
@@ -143,7 +131,6 @@ export default function CirclePreviewPage() {
             </div>
           </div>
 
-          {/* Secondary Stats Zone */}
           <div className="grid grid-cols-2 divide-x-2 divide-black border-b-2 border-black">
             <div className="p-6">
               <div className="text-xs mb-1">ACTIVE MEMBERS</div>
@@ -153,31 +140,36 @@ export default function CirclePreviewPage() {
             </div>
             <div className="p-6">
               <div className="text-xs mb-1">YOUR STATUS</div>
-              <div className="text-3xl font-bold">NOT JOINED</div>
+              <div className="text-3xl font-bold">{userIsJoined ? "MEMBER" : "NOT JOINED"}</div>
             </div>
           </div>
 
-          {/* Action Zone */}
           <div className="fixed bottom-0 left-0 right-0 md:left-[240px] border-t-2 border-black bg-white p-4 z-40">
-            <button
-              onClick={handleJoinClick}
-              className="w-full h-16 text-2xl font-bold border-2 border-black bg-white hover:bg-gray-100 transition-colors"
-            >
-              JOIN CIRCLE
-            </button>
+            {userIsJoined ? (
+              <button
+                onClick={() => router.push("/payments")}
+                className="w-full h-16 text-2xl font-bold border-2 border-black bg-black text-white hover:bg-gray-900 transition-colors"
+              >
+                GO TO PAYMENTS
+              </button>
+            ) : (
+              <button
+                onClick={handleJoinClick}
+                className="w-full h-16 text-2xl font-bold border-2 border-black bg-white hover:bg-gray-100 transition-colors"
+              >
+                JOIN CIRCLE
+              </button>
+            )}
           </div>
         </main>
 
         <MobileBottomNav />
       </div>
 
-      {/* Confirmation Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay */}
           <div className="absolute inset-0 bg-black/80" onClick={() => setShowModal(false)} />
 
-          {/* Modal Content */}
           <div className="relative w-full max-w-md">
             {step === "confirm" && (
               <div className="bg-white border-4 border-black">
@@ -247,7 +239,7 @@ export default function CirclePreviewPage() {
                     onClick={handleComplete}
                     className="w-full h-12 bg-black text-white font-bold border-2 border-black hover:bg-gray-900"
                   >
-                    GO TO CIRCLE
+                    CONTINUE
                   </button>
                 </div>
               </div>

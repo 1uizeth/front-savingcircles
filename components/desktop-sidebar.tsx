@@ -42,12 +42,6 @@ export function DesktopSidebar() {
           },
         ]
       : []),
-    {
-      id: "position",
-      label: "POSITION",
-      href: "/profile",
-      icon: "■",
-    },
   ]
 
   const getTabBackground = (item: NavItem, isActive: boolean) => {

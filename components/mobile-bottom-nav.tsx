@@ -48,12 +48,6 @@ export function MobileBottomNav() {
       value: joinedCircles.length > 0 ? 1250 : 0,
       hasActivity: joinedCircles.length > 0,
     },
-    {
-      id: "position",
-      label: "POSITION",
-      href: "/profile",
-      icon: "■",
-    },
   ]
 
   const getTabBackground = (item: NavItem, isActive: boolean) => {
