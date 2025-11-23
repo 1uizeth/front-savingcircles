@@ -1,22 +1,48 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
 import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { getCircleById } from "@/lib/mock-data"
+import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
 
-export default function CirclePreviewPage({ params }: { params: { id: string } }) {
+export default function CirclePreviewPage() {
   const router = useRouter()
+  const params = useParams()
+  const rawCircleId = params?.id
+  const circleId = Array.isArray(rawCircleId) ? rawCircleId[0] : rawCircleId
   const { nextRoundSeconds } = useTimer()
   const { isJoined, joinCircle } = useUser()
   const [showModal, setShowModal] = useState(false)
   const [step, setStep] = useState<"confirm" | "success">("confirm")
 
-  const circle = getCircleById(params.id)
+  if (!circleId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-2xl font-bold">LOADING CIRCLE…</div>
+      </div>
+    )
+  }
+
+  const circle = getCircleById(circleId)
+  const { data: contractData, loading: isLoadingContract, error: contractError } = useCircleContractData(circle?.address)
+
+  const installmentAmount = contractData?.installmentSize ?? circle?.installment ?? 0
+  const totalRounds = contractData?.numRounds ?? circle?.totalRounds ?? 0
+  const displayRound = contractData ? Math.max(1, contractData.currRound + 1) : circle?.round ?? 1
+  const prizeAmount = contractData ? contractData.installmentSize * (contractData.numUsers ?? 0) : circle?.prize ?? 0
+  const membersCount = contractData?.numUsers ?? circle?.members ?? 0
+  const poolToDate = contractData
+    ? contractData.installmentSize * (contractData.numUsers ?? 0) * Math.max(0, contractData.currRound)
+    : circle?.totalContributions ?? 0
+  const formatAmount = (value?: number, unit = "USDC") => {
+    if (value === undefined || Number.isNaN(value)) return "—"
+    return `${value.toLocaleString()} ${unit}`
+  }
 
   if (!circle) {
     return (
@@ -27,8 +53,8 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
   }
 
   // If already joined, redirect to dashboard
-  if (isJoined(params.id)) {
-    router.push(`/circles/${params.id}`)
+  if (isJoined(circleId)) {
+    router.push(`/circles/${circleId}`)
     return null
   }
 
@@ -49,12 +75,12 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
   }
 
   const handleConfirm = () => {
-    joinCircle(params.id)
+    joinCircle(circleId)
     setStep("success")
   }
 
   const handleComplete = () => {
-    router.push(`/circles/${params.id}`)
+    router.push(`/circles/${circleId}`)
   }
 
   return (
@@ -63,14 +89,28 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
         <DesktopSidebar />
 
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-          <ContextBar location="CIRCLE DETAILS" nextRoundSeconds={nextRoundSeconds} />
+          <ContextBar
+            location={`${contractData?.name ?? circle.name} PREVIEW`}
+            nextRoundSeconds={nextRoundSeconds}
+          />
+
+          {contractError && (
+            <div className="border-b-2 border-black bg-red-50 text-red-900 p-4 text-sm">
+              Failed to load on-chain data: {contractError}
+            </div>
+          )}
+          {isLoadingContract && !contractError && (
+            <div className="border-b-2 border-black bg-blue-50 text-blue-900 p-4 text-sm">Syncing on-chain data…</div>
+          )}
 
           {/* Circle Header Zone */}
           <div className="border-b-2 border-black p-8 relative">
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-6">
               <div>
-                <div className="text-6xl font-bold mb-2">{circle.name}</div>
-                <div className="text-2xl">ROUND {circle.round}</div>
+                <div className="text-6xl font-bold mb-2">{contractData?.name ?? circle.name}</div>
+                <div className="text-2xl">ROUND {displayRound}</div>
+                <div className="text-xs uppercase text-gray-500 mt-3">CONTRACT</div>
+                <div className="text-sm font-mono break-all">{circle.address}</div>
               </div>
               <div className="text-right">
                 <div className="text-sm mb-1">TIME LEFT</div>
@@ -89,17 +129,17 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y-2 md:divide-y-0 md:divide-x-2 divide-black border-b-2 border-black">
             <div className="p-8">
               <div className="text-sm mb-2">PRIZE</div>
-              <div className="text-6xl font-bold mb-2">{circle.prize}</div>
+              <div className="text-6xl font-bold mb-2">{prizeAmount}</div>
               <div className="text-xl">USDC</div>
             </div>
             <div className="p-8">
               <div className="text-sm mb-2">INSTALLMENT</div>
-              <div className="text-6xl font-bold mb-2">{circle.installment}</div>
+              <div className="text-6xl font-bold mb-2">{installmentAmount}</div>
               <div className="text-xl">USDC / ROUND</div>
             </div>
             <div className="p-8">
               <div className="text-sm mb-2">TOTAL ROUNDS</div>
-              <div className="text-6xl font-bold mb-2">{circle.totalRounds}</div>
+              <div className="text-6xl font-bold mb-2">{totalRounds}</div>
               <div className="text-xl">ROUNDS</div>
             </div>
           </div>
@@ -112,12 +152,12 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
             </div>
             <div className="p-6">
               <div className="text-xs mb-1">TOTAL POOL</div>
-              <div className="text-3xl font-bold">{circle.totalContributions} USDC</div>
+              <div className="text-3xl font-bold">{formatAmount(poolToDate)}</div>
             </div>
             <div className="p-6">
               <div className="text-xs mb-1">ACTIVE MEMBERS</div>
               <div className="text-3xl font-bold">
-                {circle.members}/{circle.maxMembers}
+                {membersCount}/{membersCount}
               </div>
             </div>
             <div className="p-6">
@@ -133,21 +173,28 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="text-xs mb-2">MAX AUCTION PER ROUND</div>
-                <div className="text-4xl font-bold">100 MNDG</div>
+                <div className="text-4xl font-bold">
+                  {contractData?.maxProtocolTokenInAuction !== undefined
+                    ? `${contractData.maxProtocolTokenInAuction.toLocaleString()} MNDG`
+                    : "—"}
+                </div>
               </div>
               <div>
                 <div className="text-xs mb-2">REWARD PER INSTALLMENT</div>
-                <div className="text-4xl font-bold">10 MNDG</div>
+                <div className="text-4xl font-bold">
+                  {contractData?.protocolTokenRewardPerInstallment ?? 10} MNDG
+                </div>
               </div>
             </div>
 
             <div className="mt-6 p-4 bg-white border-2 border-black text-sm space-y-2">
               <p>
-                <strong>Each round:</strong> Pay {circle.installment} USDC installment + deposit MNDG (up to 100 MNDG)
-                to increase your odds.
+                <strong>Each round:</strong> Pay {installmentAmount} USDC installment + deposit MNDG (up to{" "}
+                {contractData?.maxProtocolTokenInAuction ?? 100} MNDG) to increase your odds.
               </p>
               <p>
-                <strong>Earn rewards:</strong> You earn 10 MNDG every time you pay an installment.
+                <strong>Earn rewards:</strong> You earn {contractData?.protocolTokenRewardPerInstallment ?? 10} MNDG
+                every time you pay an installment.
               </p>
             </div>
           </div>
@@ -193,18 +240,19 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Installment per round:</span>
-                      <span>{circle.installment} USDC</span>
+                      <span>{installmentAmount} USDC</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Total rounds:</span>
-                      <span>{circle.totalRounds}</span>
+                      <span>{totalRounds}</span>
                     </div>
                   </div>
 
                   <p className="text-sm pt-2 text-gray-600">
-                    After purchase, you'll need to pay your first {circle.installment} USDC installment to enter the
-                    current round. For each installment you'll also deposit MNDG into the auction (up to 100 MNDG) and
-                    earn 10 MNDG as a reward.
+                    After purchase, you'll need to pay your first {installmentAmount} USDC installment to enter the
+                    current round. For each installment you'll also deposit MNDG into the auction (up to{" "}
+                    {contractData?.maxProtocolTokenInAuction ?? 100} MNDG) and earn{" "}
+                    {contractData?.protocolTokenRewardPerInstallment ?? 10} MNDG as a reward.
                   </p>
                 </div>
 
@@ -239,7 +287,7 @@ export default function CirclePreviewPage({ params }: { params: { id: string } }
                 </div>
 
                 <div className="pt-4">
-                  <p className="text-sm">Next: Pay your first installment to enter Round {circle.round}</p>
+                  <p className="text-sm">Next: Pay your first installment to enter Round {displayRound}</p>
                 </div>
 
                 <div className="space-y-2 pt-6">

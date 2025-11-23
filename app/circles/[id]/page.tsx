@@ -8,6 +8,7 @@ import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { getCircleById, getUserCircleData } from "@/lib/mock-data"
+import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
 
 export default function CircleDetailPage() {
   const params = useParams()
@@ -18,17 +19,28 @@ export default function CircleDetailPage() {
   const userCircleData = getUserCircleData(circleId)
 
   const { nextRoundSeconds } = useTimer()
-
+  const { data: contractData, loading: isLoadingContract, error: contractError } = useCircleContractData(circle?.address)
   const [timeLeft, setTimeLeft] = useState(circle?.timeLeft || 0)
   const [demoPhase, setDemoPhase] = useState<"calm" | "attention" | "urgent">("attention")
 
   useEffect(() => {
     if (!circle) return
+
+    let initialSeconds = circle.timeLeft || 0
+
+    if (contractData?.roundDeadline) {
+      const nowSeconds = Math.floor(Date.now() / 1000)
+      initialSeconds = Math.max(0, contractData.roundDeadline - nowSeconds)
+    }
+
+    setTimeLeft(initialSeconds)
+
     const interval = setInterval(() => {
       setTimeLeft((prev) => Math.max(0, prev - 1))
     }, 1000)
+
     return () => clearInterval(interval)
-  }, [circle])
+  }, [circle, contractData?.roundDeadline])
 
   useEffect(() => {
     if (nextRoundSeconds === 0) {
@@ -74,26 +86,52 @@ export default function CircleDetailPage() {
   const canEnterAuction = circle.phase === "auction"
   const isContributionPhase = circle.phase === "contribution"
 
-  const roundsPaidByUser = 3 // This would come from contract/backend
-  const totalPaidByUser = roundsPaidByUser * circle.installment
-  const totalMndgRewards = roundsPaidByUser * 10 // 10 MNDG per installment
+  const displayRound = contractData ? Math.max(1, contractData.currRound + 1) : circle.round
+  const totalRounds = contractData?.numRounds ?? circle.totalRounds
+  const installmentAmount = contractData?.installmentSize ?? circle.installment
+  const prizeAmount = contractData ? contractData.installmentSize * (contractData.numUsers || 0) : circle.prize
+  const membersCount = contractData?.numUsers ?? circle.members
+  const maxMembersCount = contractData?.numUsers ?? circle.maxMembers
+  const poolToDate = contractData
+    ? contractData.installmentSize * (contractData.numUsers || 0) * Math.max(0, contractData.currRound)
+    : circle.totalContributions
+  const rewardPerInstallment = contractData?.protocolTokenRewardPerInstallment ?? 10
+  const roundsPaidByUser = contractData?.nextRoundToPay ?? 0
+  const totalPaidByUser = roundsPaidByUser * installmentAmount
+  const totalMndgRewards = roundsPaidByUser * rewardPerInstallment
+  const nextRoundDue = roundsPaidByUser + 1
+  const formatAmount = (value?: number, unit = "USDC") => {
+    if (value === undefined || Number.isNaN(value)) return "—"
+    return `${value.toLocaleString()} ${unit}`
+  }
+  const contextLocation = `${contractData?.name ?? circle.name} - ROUND ${displayRound}`
 
   return (
     <div className={`min-h-screen flex ${phaseColor}`}>
       <DesktopSidebar />
 
       <main className="flex-1 md:ml-[240px] pb-16 md:pb-8">
-        <ContextBar
-          location={`${circle.name} - ROUND ${circle.round}`}
-          phase={circle.phase}
-          nextRoundSeconds={nextRoundSeconds}
-        />
+        <ContextBar location={contextLocation} phase={circle.phase} nextRoundSeconds={nextRoundSeconds} />
+
+        {contractError && (
+          <div className="border-b-2 border-black bg-red-50 text-red-900 p-4 text-sm">
+            Failed to load on-chain data: {contractError}
+          </div>
+        )}
+
+        {isLoadingContract && !contractError && (
+          <div className="border-b-2 border-black bg-blue-50 text-blue-900 p-4 text-sm">Syncing on-chain circle data…</div>
+        )}
 
         <div className="border-b-2 border-black p-4 md:p-6 bg-black text-white">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-            <div className="text-2xl md:text-3xl font-bold">
-              ROUND {circle.round}
-              {circle.totalRounds && ` OF ${circle.totalRounds}`}
+            <div>
+              <div className="text-2xl md:text-3xl font-bold">
+                ROUND {displayRound}
+                {totalRounds && ` OF ${totalRounds}`}
+              </div>
+              <div className="text-[11px] uppercase tracking-wide text-gray-300 mt-2">Contract</div>
+              <div className="text-xs font-mono break-all">{circle.address}</div>
             </div>
 
             <div className="flex gap-1 border border-white p-0.5">
@@ -129,7 +167,7 @@ export default function CircleDetailPage() {
           <div className="border-b-2 border-black p-12 md:p-16 text-center">
             <div className="text-xl md:text-2xl mb-4">CONTRIBUTION</div>
             <div className="text-6xl md:text-8xl font-bold mb-6">DUE NOW</div>
-            <div className="text-5xl md:text-7xl font-bold">{circle.installment} USDC</div>
+            <div className="text-5xl md:text-7xl font-bold">{installmentAmount} USDC</div>
           </div>
         )}
 
@@ -139,32 +177,36 @@ export default function CircleDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <div className="text-xs mb-1">PRIZE</div>
-              <div className="text-4xl font-bold">{circle.prize} USDC</div>
+              <div className="text-4xl font-bold">{prizeAmount} USDC</div>
             </div>
             <div>
               <div className="text-xs mb-1">INSTALLMENT</div>
-              <div className="text-4xl font-bold">{circle.installment} USDC / ROUND</div>
+              <div className="text-4xl font-bold">{installmentAmount} USDC / ROUND</div>
             </div>
             <div>
               <div className="text-xs mb-1">ROUNDS</div>
-              <div className="text-4xl font-bold">{circle.totalRounds}</div>
+              <div className="text-4xl font-bold">{totalRounds}</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div>
               <div className="text-xs mb-1">TOTAL PAID BY YOU</div>
-              <div className="text-2xl font-bold">{totalPaidByUser} USDC</div>
+              <div className="text-2xl font-bold">{formatAmount(totalPaidByUser)}</div>
             </div>
             <div>
-              <div className="text-xs mb-1">TOTAL POOL</div>
-              <div className="text-2xl font-bold">{circle.totalContributions} USDC</div>
+              <div className="text-xs mb-1">TOTAL POOL (TO DATE)</div>
+              <div className="text-2xl font-bold">{formatAmount(poolToDate)}</div>
             </div>
             <div>
               <div className="text-xs mb-1">ROUNDS PAID</div>
               <div className="text-2xl font-bold">
-                {roundsPaidByUser} / {circle.totalRounds}
+                {roundsPaidByUser} / {totalRounds}
               </div>
+            </div>
+            <div>
+              <div className="text-xs mb-1">NEXT ROUND DUE</div>
+              <div className="text-2xl font-bold">{totalRounds ? Math.min(nextRoundDue, totalRounds) : nextRoundDue}</div>
             </div>
           </div>
 
@@ -179,29 +221,30 @@ export default function CircleDetailPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <div className="text-xs mb-1">THIS ROUND – YOUR AUCTION STAKE</div>
-              <div className="text-4xl font-bold">25 MNDG</div>
+              <div className="text-xs mb-1">MAX AUCTION PER ROUND</div>
+              <div className="text-4xl font-bold">
+                {contractData?.maxProtocolTokenInAuction !== undefined
+                  ? `${contractData.maxProtocolTokenInAuction.toLocaleString()} MNDG`
+                  : "—"}
+              </div>
+              <div className="text-xs mt-2 text-gray-600">Taken from contract cap</div>
             </div>
             <div>
-              <div className="text-xs mb-1">TOTAL AUCTION THIS ROUND</div>
-              <div className="text-4xl font-bold">200 MNDG</div>
+              <div className="text-xs mb-1">Your Auction Stake</div>
+              <div className="text-4xl font-bold">—</div>
+              <div className="text-xs mt-2 text-gray-600">Connect wallet flows coming soon</div>
             </div>
           </div>
 
-          <div className="mt-6">
-            <div className="text-xs mb-2">YOUR WEIGHT</div>
-            <div className="text-3xl font-bold">12.5%</div>
-            <div className="text-sm mt-2 text-gray-600">Based on your auction stake vs total</div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <div className="text-xs mb-1">REWARD PER INSTALLMENT</div>
-              <div className="text-2xl font-bold">10 MNDG</div>
+              <div className="text-2xl font-bold">{rewardPerInstallment} MNDG</div>
             </div>
             <div>
-              <div className="text-xs mb-1">TOTAL MNDG REWARDS EARNED</div>
+              <div className="text-xs mb-1">TOTAL MNDG REWARDS CREDITED</div>
               <div className="text-2xl font-bold">{totalMndgRewards} MNDG</div>
+              <div className="text-xs mt-1 text-gray-600">Based on {roundsPaidByUser} paid rounds</div>
             </div>
           </div>
         </div>
@@ -209,7 +252,7 @@ export default function CircleDetailPage() {
         <div className="border-b-2 border-black p-8">
           <div className="text-xs mb-2">ACTIVE MEMBERS</div>
           <div className="text-3xl font-bold">
-            {circle.members}/{circle.maxMembers}
+            {membersCount}/{maxMembersCount}
           </div>
         </div>
 
@@ -247,3 +290,4 @@ export default function CircleDetailPage() {
     </div>
   )
 }
+

@@ -1,6 +1,7 @@
 export interface Circle {
   id: string
   name: string
+  address: string
   members: number
   maxMembers: number
   round: number
@@ -21,10 +22,13 @@ export interface UserCircleData {
 }
 
 // All available circles in the platform
+const DEFAULT_CONTRACT_ADDRESS = "0xfDF73F61146B9050FFe4b755364B9CAC670ea5b2"
+
 export const allCircles: Circle[] = [
   {
     id: "1",
     name: "ALPHA CIRCLE",
+    address: DEFAULT_CONTRACT_ADDRESS,
     members: 8,
     maxMembers: 10,
     round: 3,
@@ -39,6 +43,7 @@ export const allCircles: Circle[] = [
   {
     id: "2",
     name: "BETA CIRCLE",
+    address: DEFAULT_CONTRACT_ADDRESS,
     members: 12,
     maxMembers: 15,
     round: 7,
@@ -53,6 +58,7 @@ export const allCircles: Circle[] = [
   {
     id: "3",
     name: "GAMMA CIRCLE",
+    address: DEFAULT_CONTRACT_ADDRESS,
     members: 6,
     maxMembers: 8,
     round: 1,

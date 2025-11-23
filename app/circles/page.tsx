@@ -115,6 +115,8 @@ export default function CirclesPage() {
                         <div className="text-sm">
                           ROUND {circle.round} • {circle.phase.toUpperCase()}
                         </div>
+                        <div className="mt-1 text-[11px] uppercase tracking-wide text-gray-500">CONTRACT</div>
+                        <div className="text-xs font-mono break-all">{circle.address}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm mb-1">TIME LEFT</div>
