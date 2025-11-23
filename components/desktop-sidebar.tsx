@@ -46,7 +46,7 @@ export function DesktopSidebar() {
 
   const getTabBackground = (item: NavItem, isActive: boolean) => {
     if (isActive) return "bg-mandinga-black text-mandinga-white"
-    if (item.needsAttention) return "bg-yellow-400"
+    if (item.needsAttention) return "bg-secondary"
     if (item.hasActivity) return "bg-yellow-100"
     return "bg-mandinga-white"
   }

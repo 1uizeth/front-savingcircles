@@ -9,6 +9,7 @@ import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
 import { PaymentModal } from "@/components/payment-modal"
+import { AuctionSection } from "@/components/auction-section"
 
 export default function CirclePreviewPage() {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function CirclePreviewPage() {
   const rawCircleId = params?.id
   const circleId = Array.isArray(rawCircleId) ? rawCircleId[0] : rawCircleId
   const { nextRoundSeconds } = useTimer()
-  const { isJoined, joinCircle } = useUser()
+  const { isJoined, joinCircle, tokens, getBidForCircle } = useUser()
   const [showModal, setShowModal] = useState(false)
   const [step, setStep] = useState<"confirm" | "success">("confirm")
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
@@ -32,9 +33,37 @@ export default function CirclePreviewPage() {
   const totalRounds = contractData?.numRounds ?? 10
   const displayRound = contractData ? Math.max(1, contractData.currRound + 1) : 1
   const prizeAmount = contractData ? contractData.installmentSize * contractData.numRounds : 0
-  const membersCount = contractData?.numUsers ?? 0
+  const membersCount = contractData?.numUsers ?? 2
 
   const userIsJoined = isJoined(circleId)
+
+  const bidData = getBidForCircle(circleId)
+  const userHasBid = bidData !== null && bidData.userBid > 0
+
+  const mockTotalBids = 800
+  const userBidAmount = bidData?.userBid ?? 0
+  const totalBidsWithUser = mockTotalBids + userBidAmount
+  const userWeight = totalBidsWithUser > 0 ? (userBidAmount / totalBidsWithUser) * 100 : 0
+
+  const mockDistribution = [
+    { rank: 1, isUser: false, percentage: 50, amount: 500 },
+    { rank: 2, isUser: false, percentage: 30, amount: 300 },
+  ]
+
+  const distributionWithUser = userHasBid
+    ? [
+        ...mockDistribution.map((d) => ({
+          ...d,
+          percentage: (d.amount / totalBidsWithUser) * 100,
+        })),
+        {
+          rank: 0,
+          isUser: true,
+          percentage: userWeight,
+          amount: userBidAmount,
+        },
+      ].sort((a, b) => b.amount - a.amount)
+    : mockDistribution
 
   const formatTime = (seconds: number) => {
     if (seconds >= 24 * 60 * 60) {
@@ -62,6 +91,10 @@ export default function CirclePreviewPage() {
   const handleComplete = () => {
     setShowModal(false)
     router.refresh()
+  }
+
+  const handleJoinAuction = () => {
+    router.push("/tokens")
   }
 
   if (!circleId) {
@@ -134,7 +167,7 @@ export default function CirclePreviewPage() {
       <div className="min-h-screen flex bg-white">
         <DesktopSidebar />
 
-        <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
+        <main className="flex-1 md:ml-[240px] pb-32 md:pb-24">
           <ContextBar location="CIRCLE DETAILS" />
 
           <div className="bg-[#2D4B8E] text-white p-4 border-b-2 border-black">
@@ -184,14 +217,34 @@ export default function CirclePreviewPage() {
             </div>
           </div>
 
+          {userIsJoined && userHasBid && (
+            <AuctionSection
+              userWeight={userWeight}
+              userBid={userBidAmount}
+              totalBids={totalBidsWithUser}
+              activeBidders={distributionWithUser.length}
+              distribution={distributionWithUser}
+            />
+          )}
+
           <div className="fixed bottom-0 left-0 right-0 md:left-[240px] border-t-2 border-black bg-white p-4 z-40">
             {userIsJoined ? (
-              <button
-                onClick={() => setPaymentModalOpen(true)}
-                className="w-full h-16 text-2xl font-bold border-2 border-black bg-black text-white hover:bg-gray-900 transition-colors"
-              >
-                PAY INSTALLMENT
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPaymentModalOpen(true)}
+                  className="flex-1 h-16 text-xl font-bold border-2 border-black bg-black text-white hover:bg-gray-900 transition-colors"
+                >
+                  PAY INSTALLMENT
+                </button>
+                {tokens > 0 && !userHasBid && (
+                  <button
+                    onClick={handleJoinAuction}
+                    className="flex-1 h-16 text-xl font-bold border-2 border-black bg-[#FFE500] text-black hover:bg-yellow-400 transition-colors"
+                  >
+                    JOIN AUCTION
+                  </button>
+                )}
+              </div>
             ) : (
               <button
                 onClick={handleJoinClick}
