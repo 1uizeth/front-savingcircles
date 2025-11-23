@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
 import { useTimer } from "@/contexts/timer-context"
@@ -33,7 +33,9 @@ export default function CirclesPage() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      <DesktopSidebar />
+      <Suspense fallback={<div className="hidden md:block w-[240px]" />}>
+        <DesktopSidebar />
+      </Suspense>
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
         {loading ? (
