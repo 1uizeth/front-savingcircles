@@ -59,7 +59,7 @@ export function DesktopSidebar() {
         className="h-16 flex items-center justify-center border-b-2 border-mandinga-black hover:bg-mandinga-gray-100 transition-colors gap-2"
       >
         <span className="text-xl">⚪️</span>
-        <h1 className="text-xl font-bold">MANDINGA</h1>
+        <h1 className="text-xl font-bold">Saving Circle</h1>
       </Link>
 
       {/* Navigation Items */}
@@ -96,7 +96,7 @@ export function DesktopSidebar() {
         }`}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="text-sm font-bold">MILES</span>
+          <span className="text-sm font-bold">TOKENS</span>
           <span className="text-3xl font-bold">{joinedCircles.length > 0 ? 1250 : 0}</span>
         </div>
         <div className="text-lg leading-none mt-1">◆</div>

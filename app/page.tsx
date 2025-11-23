@@ -36,7 +36,30 @@ export default function HomePage() {
         <DesktopSidebar />
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
           <ContextBar location="BROWSE CIRCLES" />
-          <div className="p-8 text-center">Loading circles...</div>
+          <div className="divide-y-2 divide-black">
+            <div className="block border-b-2 border-black bg-white p-4 sm:p-8 animate-pulse">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  <div className="h-10 bg-gray-300 rounded w-48"></div>
+                </div>
+                <div className="text-left sm:text-right space-y-2">
+                  <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  <div className="h-8 bg-gray-300 rounded w-40"></div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-300 rounded w-24"></div>
+                  <div className="h-6 bg-gray-300 rounded w-36"></div>
+                </div>
+                <div className="text-left sm:text-right space-y-2">
+                  <div className="h-3 bg-gray-300 rounded w-20"></div>
+                  <div className="h-6 bg-gray-300 rounded w-16"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </main>
         <MobileBottomNav />
       </div>

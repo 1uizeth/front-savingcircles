@@ -11,7 +11,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Mandinga — Brutalist Web3 Raffle",
+  title: "Saving Circle — Brutalist Web3 Raffle",
   description: "Ritualistic lottery architecture with no decoration",
   generator: "v0.app",
   icons: {

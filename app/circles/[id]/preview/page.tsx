@@ -8,6 +8,7 @@ import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
+import { PaymentModal } from "@/components/payment-modal"
 
 export default function CirclePreviewPage() {
   const router = useRouter()
@@ -18,6 +19,7 @@ export default function CirclePreviewPage() {
   const { isJoined, joinCircle } = useUser()
   const [showModal, setShowModal] = useState(false)
   const [step, setStep] = useState<"confirm" | "success">("confirm")
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
 
   const contractAddress = circleId
   const {
@@ -65,15 +67,53 @@ export default function CirclePreviewPage() {
   if (!circleId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl font-bold">LOADING CIRCLE…</div>
+        <div className="w-full max-w-4xl p-8 space-y-8 animate-pulse">
+          <div className="h-32 bg-gray-300 rounded"></div>
+          <div className="h-64 bg-gray-300 rounded"></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="h-32 bg-gray-300 rounded"></div>
+            <div className="h-32 bg-gray-300 rounded"></div>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (isLoadingContract) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl font-bold">LOADING CIRCLE DATA…</div>
+      <div className="min-h-screen flex bg-white">
+        <DesktopSidebar />
+        <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
+          <ContextBar location="CIRCLE DETAILS" />
+          <div className="animate-pulse">
+            <div className="bg-gray-300 p-4 border-b-2 border-black h-20"></div>
+            <div className="border-b-2 border-black p-8">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8">
+                <div className="flex-1 space-y-4">
+                  <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  <div className="h-16 bg-gray-300 rounded w-48"></div>
+                </div>
+                <div className="md:text-right space-y-4">
+                  <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  <div className="h-12 bg-gray-300 rounded w-40"></div>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y-2 md:divide-y-0 md:divide-x-2 divide-black border-b-2 border-black">
+              <div className="p-8 space-y-4">
+                <div className="h-4 bg-gray-300 rounded w-24"></div>
+                <div className="h-16 bg-gray-300 rounded w-32"></div>
+                <div className="h-6 bg-gray-300 rounded w-40"></div>
+              </div>
+              <div className="p-8 space-y-4">
+                <div className="h-4 bg-gray-300 rounded w-24"></div>
+                <div className="h-16 bg-gray-300 rounded w-32"></div>
+                <div className="h-6 bg-gray-300 rounded w-40"></div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <MobileBottomNav />
       </div>
     )
   }
@@ -147,10 +187,10 @@ export default function CirclePreviewPage() {
           <div className="fixed bottom-0 left-0 right-0 md:left-[240px] border-t-2 border-black bg-white p-4 z-40">
             {userIsJoined ? (
               <button
-                onClick={() => router.push("/payments")}
+                onClick={() => setPaymentModalOpen(true)}
                 className="w-full h-16 text-2xl font-bold border-2 border-black bg-black text-white hover:bg-gray-900 transition-colors"
               >
-                GO TO PAYMENTS
+                PAY INSTALLMENT
               </button>
             ) : (
               <button
@@ -246,6 +286,17 @@ export default function CirclePreviewPage() {
             )}
           </div>
         </div>
+      )}
+
+      {userIsJoined && contractData && (
+        <PaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
+          circleId={circleId}
+          installment={installmentAmount}
+          currentRound={displayRound}
+          totalRounds={totalRounds}
+        />
       )}
     </>
   )

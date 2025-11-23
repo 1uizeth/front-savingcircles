@@ -42,7 +42,7 @@ export function MobileBottomNav() {
       : []),
     {
       id: "miles",
-      label: "MILES",
+      label: "TOKENS",
       href: "/miles",
       icon: "◆",
       value: joinedCircles.length > 0 ? 1250 : 0,

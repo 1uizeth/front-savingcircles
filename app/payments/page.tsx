@@ -1,34 +1,28 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
 import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
+import { PaymentModal } from "@/components/payment-modal"
 
 type UrgencyState = "paid" | "due" | "overdue"
 
-const CIRCLE_CONTRACT_ADDRESS = "0xfDF73F61146B9050FFe4b755364B9CAC670ea5b2"
-
-export default function PaymentsPage() {
+function CirclePaymentCard({
+  circleAddress,
+  onPayClick,
+}: {
+  circleAddress: string
+  onPayClick: (circleAddress: string, amount: number, round: number, totalRounds: number) => void
+}) {
   const { nextRoundSeconds } = useTimer()
-  const router = useRouter()
-  const { joinedCircles } = useUser()
-
-  const { data: contractData, loading } = useCircleContractData(CIRCLE_CONTRACT_ADDRESS)
-
-  const [urgency, setUrgency] = useState<UrgencyState>("due")
-
-  const hasJoinedCircle = joinedCircles.includes(CIRCLE_CONTRACT_ADDRESS)
-
-  useEffect(() => {
-    if (nextRoundSeconds === 0) {
-      router.push(`/circles/${CIRCLE_CONTRACT_ADDRESS}/result`)
-    }
-  }, [nextRoundSeconds, router])
+  const { data: contractData, loading } = useCircleContractData(circleAddress)
+  const [urgency] = useState<UrgencyState>("due") // In production, this would come from contract
 
   const getDeadlineDate = () => {
     const now = new Date()
@@ -36,19 +30,127 @@ export default function PaymentsPage() {
     return deadline.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
     })
   }
 
-  const currentPot = contractData ? contractData.installmentSize * contractData.numUsers : 0
-  const installmentAmount = contractData?.installmentSize ?? 0
-  const displayRound = contractData ? contractData.currRound : 1
-  const totalRounds = contractData?.numRounds ?? 0
-  const paidMembers = contractData ? Math.floor(contractData.numUsers * 0.8) : 0
-  const totalMembers = contractData?.numUsers ?? 0
+  if (loading || !contractData) {
+    return (
+      <div className="border-b-2 border-black p-6 bg-white">
+        <div className="animate-pulse">
+          <div className="flex items-center justify-between mb-6">
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-300 rounded w-24"></div>
+              <div className="h-8 bg-gray-300 rounded w-32"></div>
+            </div>
+            <div className="h-4 bg-gray-300 rounded w-20"></div>
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-300 rounded w-32"></div>
+              <div className="h-10 bg-gray-300 rounded w-24"></div>
+            </div>
+            <div className="h-12 bg-gray-300 rounded w-20"></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+            <div className="space-y-2">
+              <div className="h-3 bg-gray-300 rounded w-16"></div>
+              <div className="h-4 bg-gray-300 rounded w-24"></div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 bg-gray-300 rounded w-16"></div>
+              <div className="h-4 bg-gray-300 rounded w-20"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-  if (!hasJoinedCircle) {
+  const installmentAmount = contractData.installmentSize
+  const displayRound = contractData.currRound
+  const totalRounds = contractData.numRounds
+  const goalAmount = contractData.installmentSize * contractData.numRounds
+  const paidMembers = Math.floor(contractData.numUsers * 0.8)
+  const totalMembers = contractData.numUsers
+
+  return (
+    <div className="border-b-2 border-black bg-white hover:bg-gray-50 transition-colors">
+      {/* Payment Status - Primary Focus */}
+      <div className="px-6 pt-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="text-sm text-gray-600 mb-1">INSTALLMENT DUE</div>
+            <div className="text-5xl font-bold">${installmentAmount}</div>
+          </div>
+          {urgency !== "paid" && (
+            <button
+              onClick={() => onPayClick(circleAddress, installmentAmount, displayRound, totalRounds)}
+              className="px-6 py-3 bg-black text-white font-bold border-2 border-black hover:bg-gray-900"
+            >
+              PAY
+            </button>
+          )}
+          {urgency === "paid" && (
+            <div className="px-6 py-3 bg-white text-black font-bold border-2 border-black">PAID ✓</div>
+          )}
+        </div>
+      </div>
+
+      {/* Circle Info - Secondary */}
+      <div className="px-6 pb-4 flex items-center justify-between border-b border-gray-200">
+        <div>
+          <div className="text-xs text-gray-600 mb-1">
+            ROUND {displayRound} OF {totalRounds}
+          </div>
+          <div className="text-lg font-bold">${goalAmount}</div>
+        </div>
+        <Link href={`/circles/${circleAddress}/preview`} className="text-xs underline hover:no-underline">
+          VIEW CIRCLE
+        </Link>
+      </div>
+
+      {/* Details Grid */}
+      <div className="px-6 pb-6">
+        <div className="grid grid-cols-2 gap-4 pt-4">
+          <div>
+            <div className="text-xs text-gray-600 mb-1">DUE ON</div>
+            <div className="text-sm font-bold">{getDeadlineDate()}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-600 mb-1">PROGRESS</div>
+            <div className="text-sm font-bold">
+              {paidMembers}/{totalMembers} PAID
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function PaymentsPage() {
+  const router = useRouter()
+  const { joinedCircles } = useUser()
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [selectedPayment, setSelectedPayment] = useState<{
+    circleId: string
+    amount: number
+    round: number
+    totalRounds: number
+  } | null>(null)
+
+  const handlePayClick = (circleAddress: string, amount: number, round: number, totalRounds: number) => {
+    setSelectedPayment({ circleId: circleAddress, amount, round, totalRounds })
+    setPaymentModalOpen(true)
+  }
+
+  const handlePayAll = () => {
+    console.log("[v0] Pay all circles:", joinedCircles)
+    // In production, this would trigger payment for all joined circles
+    alert("Pay All feature coming soon!")
+  }
+
+  if (joinedCircles.length === 0) {
     return (
       <div className="min-h-screen flex bg-white">
         <DesktopSidebar />
@@ -69,116 +171,56 @@ export default function PaymentsPage() {
     )
   }
 
-  if (loading || !contractData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl font-bold">LOADING PAYMENT INFO…</div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col md:flex-row">
       <DesktopSidebar />
 
-      <main className="flex-1 md:ml-[240px] pb-32 md:pb-24">
+      <main className="flex-1 md:ml-[240px] flex flex-col pb-20 md:pb-0">
         <ContextBar location="PAYMENTS" />
 
-        <div className="bg-black text-white px-4 py-3 flex items-center justify-between">
-          <span className="text-xl font-bold">
-            ROUND {displayRound} OF {totalRounds}
-          </span>
-
-          {/* Demo controls for testing UI states */}
-          <div className="flex gap-1 border-2 border-white p-1">
-            <button
-              onClick={() => setUrgency("paid")}
-              className={`px-2 py-1 text-xs font-bold border transition-colors ${
-                urgency === "paid" ? "bg-white text-black border-white" : "border-white text-white"
-              }`}
-            >
-              PAID
-            </button>
-            <button
-              onClick={() => setUrgency("due")}
-              className={`px-2 py-1 text-xs font-bold border transition-colors ${
-                urgency === "due" ? "bg-[#FFEB3B] text-black border-[#FFEB3B]" : "border-white text-white"
-              }`}
-            >
-              DUE
-            </button>
-            <button
-              onClick={() => setUrgency("overdue")}
-              className={`px-2 py-1 text-xs font-bold border transition-colors ${
-                urgency === "overdue" ? "bg-white text-black border-white" : "border-white text-white"
-              }`}
-            >
-              OVERDUE
-            </button>
+        <div className="bg-[#3949AB] text-white px-6 py-4 border-b-2 border-black">
+          <div className="text-xl font-bold">
+            {joinedCircles.length} ACTIVE CIRCLE{joinedCircles.length !== 1 ? "S" : ""}
           </div>
         </div>
 
-        <div
-          className={`flex flex-col items-center justify-center py-16 ${
-            urgency === "paid" ? "bg-white" : urgency === "due" ? "bg-[#FFEB3B]" : "bg-white"
-          }`}
-        >
-          <div className="text-center px-4">
-            <div className="text-2xl font-bold mb-8">INSTALLMENT</div>
-            <div className="text-6xl md:text-8xl font-bold leading-none mb-4">
-              {urgency === "paid" ? "PAID ✓" : urgency === "due" ? "DUE NOW" : "OVERDUE"}
-            </div>
-            {urgency !== "paid" && <div className="text-4xl md:text-6xl font-bold">${installmentAmount}</div>}
-          </div>
+        <div className="flex-1 overflow-y-auto">
+          {joinedCircles.map((circleAddress) => (
+            <CirclePaymentCard key={circleAddress} circleAddress={circleAddress} onPayClick={handlePayClick} />
+          ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-0 border-t-2 border-black">
-          <div className="p-6 border-r-2 border-b-2 border-black">
-            <div className="text-sm text-gray-600 mb-2">DEADLINE</div>
-            <div className="text-xl font-bold">{getDeadlineDate()}</div>
-          </div>
-          <div className="p-6 border-b-2 border-black">
-            <div className="text-sm text-gray-600 mb-2">PROGRESS</div>
-            <div className="text-xl font-bold">
-              {paidMembers}/{totalMembers} PAID
+        <div className="border-t-2 border-black bg-gray-50 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm font-bold">TOTAL DUE</div>
+            <div className="text-3xl font-bold">
+              ${joinedCircles.length * 100} {/* Placeholder - should sum actual amounts */}
             </div>
           </div>
-          <div className="p-6 border-r-2 border-b-2 border-black">
-            <div className="text-sm text-gray-600 mb-2">CURRENT POT</div>
-            <div className="text-xl font-bold">${currentPot}</div>
-          </div>
-          <div className="p-6 border-b-2 border-black">
-            <div className="text-sm text-gray-600 mb-2">YOUR AMOUNT</div>
-            <div className="text-xl font-bold">${installmentAmount}</div>
-          </div>
-          <div className="col-span-2 p-6">
-            <div className="text-sm text-gray-600 mb-2">PAYMENT STATUS</div>
-            <div className="font-bold">
-              {urgency === "paid"
-                ? `✓ Paid for Round ${displayRound}`
-                : urgency === "due"
-                  ? "Payment due - Please pay to stay in the round"
-                  : "⚠ Payment overdue - Risk of removal"}
-            </div>
-            {urgency === "paid" && (
-              <div className="text-sm mt-1 text-gray-600">
-                Total paid so far: ${installmentAmount * Math.max(1, displayRound - 1)}
-              </div>
-            )}
-          </div>
+          <p className="text-xs text-gray-600 mb-4">Pay all installments at once to stay active in all circles</p>
+          {joinedCircles.length > 1 && (
+            <button
+              onClick={handlePayAll}
+              className="w-full h-14 text-lg font-bold bg-[#FFEB3B] hover:bg-[#FDD835] transition-colors border-2 border-black"
+            >
+              PAY ALL CIRCLES
+            </button>
+          )}
         </div>
       </main>
 
-      {urgency !== "paid" && (
-        <button
-          onClick={() => alert(`Payment of ${installmentAmount} USDC triggered`)}
-          className="fixed bottom-16 md:bottom-0 left-0 right-0 md:left-[240px] z-50 h-20 text-2xl font-bold bg-[#FFEB3B] hover:bg-[#FDD835] transition-colors border-t-2 border-black"
-        >
-          PAY ${installmentAmount}
-        </button>
-      )}
-
       <MobileBottomNav />
+
+      {selectedPayment && (
+        <PaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
+          circleId={selectedPayment.circleId}
+          installment={selectedPayment.amount}
+          currentRound={selectedPayment.round}
+          totalRounds={selectedPayment.totalRounds}
+        />
+      )}
     </div>
   )
 }

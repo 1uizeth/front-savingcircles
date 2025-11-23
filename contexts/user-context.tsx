@@ -4,6 +4,9 @@ import { createContext, useContext, useState, type ReactNode } from "react"
 
 interface UserContextType {
   joinedCircles: string[]
+  tokens: number
+  addTokens: (amount: number) => void
+  subtractTokens: (amount: number) => void
   joinCircle: (circleId: string) => void
   leaveCircle: (circleId: string) => void
   isJoined: (circleId: string) => boolean
@@ -13,6 +16,15 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [joinedCircles, setJoinedCircles] = useState<string[]>([])
+  const [tokens, setTokens] = useState<number>(0)
+
+  const addTokens = (amount: number) => {
+    setTokens((prev) => prev + amount)
+  }
+
+  const subtractTokens = (amount: number) => {
+    setTokens((prev) => Math.max(0, prev - amount))
+  }
 
   const joinCircle = (circleId: string) => {
     setJoinedCircles((prev) => {
@@ -30,7 +42,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <UserContext.Provider value={{ joinedCircles, joinCircle, leaveCircle, isJoined }}>{children}</UserContext.Provider>
+    <UserContext.Provider
+      value={{ joinedCircles, tokens, addTokens, subtractTokens, joinCircle, leaveCircle, isJoined }}
+    >
+      {children}
+    </UserContext.Provider>
   )
 }
 

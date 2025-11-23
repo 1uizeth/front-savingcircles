@@ -2,13 +2,12 @@
 import Link from "next/link"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
-import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 
 export default function MilesPage() {
   const { nextRoundSeconds } = useTimer()
-  const { joinedCircles } = useUser()
+  const { joinedCircles, tokens } = useUser()
 
   const hasMiles = joinedCircles.length > 0
 
@@ -17,50 +16,48 @@ export default function MilesPage() {
       <DesktopSidebar />
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-        <ContextBar location="MANDINGA MILES (MGA)" nextRoundSeconds={nextRoundSeconds} />
+        {/* How it works section */}
+        <div className="border-2 border-black mb-8">
+          <div className="h-12 bg-gray-100 flex items-center px-4 border-b-2 border-black">
+            <h2 className="text-sm font-bold">HOW IT WORKS</h2>
+          </div>
+          <div className="p-8 space-y-6">
+            <div className="flex gap-4">
+              <span className="text-2xl font-bold">1.</span>
+              <div>
+                <div className="font-bold mb-1">Join a circle and participate</div>
+                <div className="text-sm">Make your USDC payments on time each round</div>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <span className="text-2xl font-bold">2.</span>
+              <div>
+                <div className="font-bold mb-1">Earn tokens automatically</div>
+                <div className="text-sm">Get 10 tokens for every $1 you contribute to your circles</div>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <span className="text-2xl font-bold">3.</span>
+              <div>
+                <div className="font-bold mb-1">Use tokens to bid in auctions</div>
+                <div className="text-sm">Add tokens to increase your odds of winning each round</div>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <span className="text-2xl font-bold">4.</span>
+              <div>
+                <div className="font-bold mb-1">Track your tokens across all circles</div>
+                <div className="text-sm">Your balance accumulates as you participate in multiple circles</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {!hasMiles ? (
           <div className="p-8 max-w-2xl mx-auto">
             <div className="text-center mb-12 pt-8">
-              <div className="text-4xl font-bold mb-4">NO MILES YET</div>
-              <div className="text-lg mb-8">Join your first circle to start earning MGA miles</div>
-            </div>
-
-            {/* How it works section */}
-            <div className="border-2 border-black mb-8">
-              <div className="h-12 bg-gray-100 flex items-center px-4 border-b-2 border-black">
-                <h2 className="text-sm font-bold">HOW IT WORKS</h2>
-              </div>
-              <div className="p-8 space-y-6">
-                <div className="flex gap-4">
-                  <span className="text-2xl font-bold">1.</span>
-                  <div>
-                    <div className="font-bold mb-1">Join a circle and participate</div>
-                    <div className="text-sm">Make your USDC payments on time each round</div>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-2xl font-bold">2.</span>
-                  <div>
-                    <div className="font-bold mb-1">Earn MGA miles automatically</div>
-                    <div className="text-sm">Get miles credited when each round completes successfully</div>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-2xl font-bold">3.</span>
-                  <div>
-                    <div className="font-bold mb-1">Use miles to bid in auctions</div>
-                    <div className="text-sm">Compete for early access to your circle's prize pool</div>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-2xl font-bold">4.</span>
-                  <div>
-                    <div className="font-bold mb-1">Track your miles across all circles</div>
-                    <div className="text-sm">Your balance accumulates as you participate in multiple circles</div>
-                  </div>
-                </div>
-              </div>
+              <div className="text-4xl font-bold mb-4">NO TOKENS YET</div>
+              <div className="text-lg mb-8">Join your first circle to start earning tokens</div>
             </div>
 
             <Link
@@ -75,24 +72,46 @@ export default function MilesPage() {
             {/* Total Balance Card */}
             <div className="border-2 border-black mb-8 p-8 bg-yellow-100">
               <div className="text-sm mb-2">TOTAL BALANCE</div>
-              <div className="text-6xl font-bold mb-2">1,250 MGA</div>
-              <div className="text-sm">Mandinga Miles</div>
+              <div className="text-6xl font-bold mb-2">{tokens}</div>
+              <div className="text-sm">Tokens</div>
             </div>
 
-            {/* What are MGA Miles */}
+            {/* How Tokens Work */}
             <div className="border-2 border-black mb-8">
               <div className="h-12 bg-gray-100 flex items-center px-4 border-b-2 border-black">
-                <h2 className="text-sm font-bold">WHAT ARE MGA MILES?</h2>
+                <h2 className="text-sm font-bold">HOW TOKENS WORK</h2>
               </div>
-              <div className="p-8">
-                <p className="mb-4">
-                  Mandinga Miles (MGA) are protocol tokens you earn by participating in circles. They're separate from
-                  USDC, which is used for your savings contributions.
-                </p>
-                <p>
-                  Use MGA miles to bid in auctions for early access to prize pools, giving you a chance to receive your
-                  payout before the random drawing.
-                </p>
+              <div className="p-8 space-y-6">
+                <div className="flex gap-4">
+                  <span className="text-2xl font-bold">1.</span>
+                  <div>
+                    <div className="font-bold mb-1">Earn tokens with every payment</div>
+                    <div className="text-sm">Get 10 tokens for every $1 you contribute to your circles</div>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <span className="text-2xl font-bold">2.</span>
+                  <div>
+                    <div className="font-bold mb-1">Add tokens to auctions</div>
+                    <div className="text-sm">
+                      Use your tokens to bid in circle auctions and increase your winning odds
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <span className="text-2xl font-bold">3.</span>
+                  <div>
+                    <div className="font-bold mb-1">Tokens accumulate across circles</div>
+                    <div className="text-sm">Your total balance grows as you participate in multiple circles</div>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <span className="text-2xl font-bold">4.</span>
+                  <div>
+                    <div className="font-bold mb-1">Strategic bidding increases chances</div>
+                    <div className="text-sm">The more tokens you add to a circle, the better your odds of winning</div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -105,14 +124,14 @@ export default function MilesPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-2">
                     <div className="font-bold">Vacation Fund</div>
-                    <div className="text-xl font-bold">100 MGA</div>
+                    <div className="text-xl font-bold">100</div>
                   </div>
                   <div className="text-sm text-gray-600">Bid in current auction</div>
                 </div>
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-2">
                     <div className="font-bold">Emergency Savings</div>
-                    <div className="text-xl font-bold">50 MGA</div>
+                    <div className="text-xl font-bold">50</div>
                   </div>
                   <div className="text-sm text-gray-600">Bid in current auction</div>
                 </div>
@@ -127,21 +146,21 @@ export default function MilesPage() {
               <div className="divide-y-2 divide-black">
                 <div className="p-6 flex justify-between items-center">
                   <div>
-                    <div className="font-bold text-green-600">+ 50 MGA</div>
+                    <div className="font-bold text-green-600">+ 50</div>
                     <div className="text-sm text-gray-600">Earned from Vacation Fund - Round 7</div>
                   </div>
                   <div className="text-sm text-gray-500">2h ago</div>
                 </div>
                 <div className="p-6 flex justify-between items-center">
                   <div>
-                    <div className="font-bold text-red-600">- 100 MGA</div>
+                    <div className="font-bold text-red-600">- 100</div>
                     <div className="text-sm text-gray-600">Bid in Vacation Fund auction</div>
                   </div>
                   <div className="text-sm text-gray-500">1d ago</div>
                 </div>
                 <div className="p-6 flex justify-between items-center">
                   <div>
-                    <div className="font-bold text-green-600">+ 50 MGA</div>
+                    <div className="font-bold text-green-600">+ 50</div>
                     <div className="text-sm text-gray-600">Earned from Emergency Savings - Round 3</div>
                   </div>
                   <div className="text-sm text-gray-500">3d ago</div>

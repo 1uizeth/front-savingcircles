@@ -39,7 +39,32 @@ export default function CirclesPage() {
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
         <ContextBar location="CIRCLES" />
 
-        {!hasJoinedCircle || loading || !contractData ? (
+        {loading ? (
+          <div className="divide-y-2 divide-black">
+            <div className="block border-b-2 border-black bg-white p-4 sm:p-8 animate-pulse">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  <div className="h-10 bg-gray-300 rounded w-48"></div>
+                </div>
+                <div className="text-left sm:text-right space-y-2">
+                  <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  <div className="h-8 bg-gray-300 rounded w-40"></div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-300 rounded w-24"></div>
+                  <div className="h-6 bg-gray-300 rounded w-36"></div>
+                </div>
+                <div className="text-left sm:text-right space-y-2">
+                  <div className="h-3 bg-gray-300 rounded w-20"></div>
+                  <div className="h-6 bg-gray-300 rounded w-16"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : !hasJoinedCircle || !contractData ? (
           <div className="p-8 max-w-2xl mx-auto">
             <div className="text-center mb-12 pt-8">
               <div className="text-4xl font-bold mb-4">NO CIRCLES YET</div>
@@ -55,8 +80,8 @@ export default function CirclesPage() {
                 <div className="flex gap-4">
                   <span className="text-2xl font-bold">1.</span>
                   <div>
-                    <div className="font-bold mb-1">Buy a ticket to join</div>
-                    <div className="text-sm">Pay a one-time ticket price to become a member</div>
+                    <div className="font-bold mb-1">Join a circle</div>
+                    <div className="text-sm">Become a member and start saving together with others</div>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -69,8 +94,8 @@ export default function CirclesPage() {
                 <div className="flex gap-4">
                   <span className="text-2xl font-bold">3.</span>
                   <div>
-                    <div className="font-bold mb-1">Get selected randomly to receive the pot</div>
-                    <div className="text-sm">Random drawing determines who wins each round</div>
+                    <div className="font-bold mb-1">Win the pot when selected</div>
+                    <div className="text-sm">Random selection determines who receives the pot each round</div>
                   </div>
                 </div>
                 <div className="flex gap-4">
