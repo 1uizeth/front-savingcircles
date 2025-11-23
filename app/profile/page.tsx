@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
 import ContextBar from "@/components/context-bar"
@@ -21,7 +22,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex">
-      <DesktopSidebar />
+      <Suspense fallback={<div className="w-[240px] hidden md:block" />}>
+        <DesktopSidebar />
+      </Suspense>
 
       <main className="flex-1 md:ml-[240px] pb-[72px] md:pb-0">
         <ContextBar

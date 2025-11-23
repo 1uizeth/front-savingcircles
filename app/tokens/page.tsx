@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
@@ -17,7 +17,9 @@ export default function TokensPage() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      <DesktopSidebar />
+      <Suspense fallback={<div className="w-[240px] hidden md:block" />}>
+        <DesktopSidebar />
+      </Suspense>
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
         {!hasTokens ? (

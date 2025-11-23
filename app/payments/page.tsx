@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
@@ -163,7 +163,9 @@ export default function PaymentsPage() {
   if (joinedCircles.length === 0) {
     return (
       <div className="min-h-screen flex bg-background">
-        <DesktopSidebar />
+        <Suspense fallback={<div className="w-[240px] hidden md:block" />}>
+          <DesktopSidebar />
+        </Suspense>
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0 flex items-center justify-center">
           <div className="text-center p-8">
             <div className="text-3xl font-bold mb-4">NO PAYMENTS DUE</div>
@@ -183,7 +185,9 @@ export default function PaymentsPage() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      <DesktopSidebar />
+      <Suspense fallback={<div className="w-[240px] hidden md:block" />}>
+        <DesktopSidebar />
+      </Suspense>
 
       <main className="flex-1 md:ml-[240px] flex flex-col pb-20 md:pb-0">
         <div className="flex-1 overflow-y-auto">

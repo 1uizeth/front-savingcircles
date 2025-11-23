@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import { Suspense } from "react"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
 import { useTimer } from "@/contexts/timer-context"
@@ -13,7 +14,9 @@ export default function MilesPage() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      <DesktopSidebar />
+      <Suspense fallback={<div className="w-[240px] hidden md:block" />}>
+        <DesktopSidebar />
+      </Suspense>
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
         {!hasMiles ? (
