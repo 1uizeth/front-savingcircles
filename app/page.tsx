@@ -3,7 +3,6 @@ import Link from "next/link"
 import { useEffect } from "react"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { DesktopSidebar } from "@/components/desktop-sidebar"
-import { ContextBar } from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
@@ -32,12 +31,11 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex bg-white">
+      <div className="min-h-screen flex bg-background">
         <DesktopSidebar />
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-          <ContextBar location="BROWSE CIRCLES" />
-          <div className="divide-y-2 divide-black">
-            <div className="block border-b-2 border-black bg-white p-4 sm:p-8 animate-pulse">
+          <div className="divide-y-4 divide-border">
+            <div className="block border-b-4 border-border bg-background p-4 sm:p-8 animate-pulse">
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-300 rounded w-32"></div>
@@ -68,11 +66,10 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex bg-white">
+      <div className="min-h-screen flex bg-background">
         <DesktopSidebar />
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-          <ContextBar location="BROWSE CIRCLES" />
-          <div className="p-8 text-center text-red-600">Error loading circles: {error}</div>
+          <div className="p-8 text-center text-destructive">Error loading circles: {error}</div>
         </main>
         <MobileBottomNav />
       </div>
@@ -84,7 +81,6 @@ export default function HomePage() {
       <div className="min-h-screen flex bg-white">
         <DesktopSidebar />
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-          <ContextBar location="BROWSE CIRCLES" />
           <div className="p-8 text-center">No circles available</div>
         </main>
         <MobileBottomNav />
@@ -96,17 +92,14 @@ export default function HomePage() {
   const goalAmount = contractData.installmentSize * contractData.numRounds
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="min-h-screen flex bg-background">
       <DesktopSidebar />
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-        <ContextBar location="BROWSE CIRCLES" />
-
-        {/* Circle List - Showing the deployed contract circle */}
-        <div className="divide-y-2 divide-black">
+        <div className="divide-y-4 divide-border">
           <Link
             href={userIsJoined ? `/circles/${CIRCLE_CONTRACT_ADDRESS}` : `/circles/${CIRCLE_CONTRACT_ADDRESS}/preview`}
-            className="block bg-white hover:bg-gray-100 transition-colors border-b-2 border-black"
+            className="block bg-background hover:bg-secondary transition-colors border-b-4 border-border"
           >
             <div className="p-4 sm:p-8">
               {/* Header Row - Round and Goal */}

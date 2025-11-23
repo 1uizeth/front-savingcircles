@@ -95,7 +95,7 @@ export default function AuctionPage() {
 
         {/* Demo Controls */}
         {showDemo && (
-          <div className="fixed top-20 right-4 z-50 bg-black text-white p-4 border-2 border-white">
+          <div className="fixed top-20 right-4 z-30 bg-black text-white p-4 border-2 border-white">
             <button onClick={() => setShowDemo(false)} className="absolute top-1 right-1 text-xs">
               ✕
             </button>
@@ -132,7 +132,7 @@ export default function AuctionPage() {
 
           {/* Right Half - Pool Status */}
           <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <div className="text-2xl font-bold mb-4">TOTAL BIDS</div>
+            <div className="text-2xl font-bold mb-4">TOTAL TOKENS</div>
             <div className="text-[96px] md:text-[120px] font-bold leading-none mb-4">{totalBids}</div>
             <div className="text-xl">
               Your bid: {currentBid} ({userWeight.toFixed(1)}%)

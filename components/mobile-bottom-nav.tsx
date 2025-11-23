@@ -21,7 +21,7 @@ export function MobileBottomNav() {
   const navItems: NavItem[] = [
     {
       id: "circles",
-      label: "CIRCLES",
+      label: "CIRCLES", // Changed back from "SAVING CIRCLES" to "CIRCLES"
       href: "/circles",
       icon: "●●○",
       value: joinedCircles.length,
@@ -41,9 +41,9 @@ export function MobileBottomNav() {
         ]
       : []),
     {
-      id: "miles",
+      id: "tokens",
       label: "TOKENS",
-      href: "/miles",
+      href: "/tokens",
       icon: "◆",
       value: joinedCircles.length > 0 ? 1250 : 0,
       hasActivity: joinedCircles.length > 0,
@@ -51,14 +51,12 @@ export function MobileBottomNav() {
   ]
 
   const getTabBackground = (item: NavItem, isActive: boolean) => {
-    if (isActive) return "bg-mandinga-black text-mandinga-white"
-    if (item.needsAttention) return "bg-yellow-400"
-    if (item.hasActivity) return "bg-yellow-100"
-    return "bg-mandinga-white"
+    if (isActive) return "bg-black text-white"
+    return "bg-white text-black"
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-[72px] bg-mandinga-white border-t-2 border-mandinga-black z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 h-[72px] bg-white border-t-2 border-black z-[100] md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="h-full flex">
         {navItems.map((item) => {
           const isActive = pathname === item.href
@@ -66,7 +64,7 @@ export function MobileBottomNav() {
             <Link
               key={item.id}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center border-r-2 last:border-r-0 border-mandinga-black transition-colors ${getTabBackground(
+              className={`flex-1 flex flex-col items-center justify-center border-r-2 last:border-r-0 border-black transition-colors ${getTabBackground(
                 item,
                 isActive,
               )}`}

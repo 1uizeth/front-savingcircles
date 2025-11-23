@@ -4,114 +4,100 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { useUser } from "@/contexts/user-context"
-
-interface NavItem {
-  id: string
-  label: string
-  href: string
-  icon: string
-  value?: string | number
-  needsAttention?: boolean
-  hasActivity?: boolean
-}
+import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
 
 export function DesktopSidebar() {
   const pathname = usePathname()
   const [walletOpen, setWalletOpen] = useState(false)
-  const { joinedCircles } = useUser()
+  const { joinedCircles, tokens } = useUser()
 
-  const navItems: NavItem[] = [
-    {
-      id: "circles",
-      label: "CIRCLES",
-      href: "/circles",
-      icon: "●●○",
-      value: joinedCircles.length,
-      hasActivity: false,
-    },
-    // Only show PAYMENTS if user has joined at least one circle
-    ...(joinedCircles.length > 0
-      ? [
-          {
-            id: "payments",
-            label: "PAYMENTS",
-            href: "/payments",
-            icon: "⚠",
-            value: "!",
-            needsAttention: true,
-          },
-        ]
-      : []),
-  ]
+  const { data: contractData, isLoading } = useCircleContractData(joinedCircles[0])
 
-  const getTabBackground = (item: NavItem, isActive: boolean) => {
-    if (isActive) return "bg-mandinga-black text-mandinga-white"
-    if (item.needsAttention) return "bg-secondary"
-    if (item.hasActivity) return "bg-yellow-100"
-    return "bg-mandinga-white"
+  const formatDueDate = (timestamp: number) => {
+    const date = new Date(timestamp * 1000)
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
   }
 
   return (
-    <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-[240px] bg-mandinga-white border-r-2 border-mandinga-black flex-col z-50">
-      {/* Logo Top - 64px */}
+    <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-[240px] bg-background border-r-2 border-border flex-col z-50">
+      {/* Logo Top */}
       <Link
         href="/"
-        className="h-16 flex items-center justify-center border-b-2 border-mandinga-black hover:bg-mandinga-gray-100 transition-colors gap-2"
+        className="h-16 flex items-center px-6 border-b-2 border-border hover:bg-secondary transition-colors"
       >
-        <span className="text-xl">⚪️</span>
-        <h1 className="text-xl font-bold">Saving Circle</h1>
+        <h1 className="text-xl font-bold">SavingCircle</h1>
       </Link>
 
       {/* Navigation Items */}
       <div className="flex-1 flex flex-col">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`h-[72px] flex flex-col items-start justify-center px-6 border-b-2 border-mandinga-black transition-colors ${getTabBackground(
-                item,
-                isActive,
-              )}`}
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="text-sm font-bold">{item.label}</span>
-                {item.value !== undefined && <span className="text-3xl font-bold">{item.value}</span>}
-              </div>
+        {/* Circles navigation item */}
+        <Link
+          href="/circles"
+          className={`flex flex-col justify-center px-6 py-4 border-b-2 border-border transition-colors ${
+            pathname === "/circles"
+              ? "bg-primary text-primary-foreground"
+              : "bg-background hover:bg-secondary active:bg-secondary-active"
+          }`}
+        >
+          <div className="flex items-center justify-between w-full">
+            <span className="text-sm font-bold">CIRCLES</span>
+            <span className="text-3xl font-bold">{joinedCircles.length}</span>
+          </div>
+        </Link>
 
-              {/* Icon below */}
-              <div className="text-lg leading-none mt-1">{item.icon}</div>
-            </Link>
-          )
-        })}
+        {/* Payments navigation item */}
+        {joinedCircles.length > 0 && (
+          <Link
+            href="/payments"
+            className={`flex flex-col justify-center px-6 py-4 border-b-2 border-border transition-colors ${
+              pathname === "/payments"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary-hover active:bg-secondary-active"
+            }`}
+          >
+            <div className="flex items-center justify-between w-full mb-1">
+              <span className="text-sm font-bold">PAYMENTS</span>
+            </div>
+            <div
+              className={`text-xs ${pathname === "/payments" ? "text-primary-foreground opacity-70" : "text-secondary-foreground opacity-70"}`}
+            >
+              {isLoading || !contractData?.roundDeadline ? (
+                <div className="h-4 w-28 bg-black/20 animate-pulse rounded" />
+              ) : (
+                <>Next due on {formatDueDate(contractData.roundDeadline)}</>
+              )}
+            </div>
+          </Link>
+        )}
       </div>
 
+      {/* Tokens section */}
       <Link
-        href="/miles"
-        className={`h-[72px] flex flex-col items-start justify-center px-6 border-t-2 border-mandinga-black transition-colors ${
-          pathname === "/miles"
-            ? "bg-mandinga-black text-mandinga-white"
-            : "bg-mandinga-white hover:bg-mandinga-gray-100"
+        href="/tokens"
+        className={`flex flex-col justify-center px-6 py-4 border-t-2 border-border transition-colors ${
+          pathname === "/tokens"
+            ? "bg-primary text-primary-foreground"
+            : "bg-background hover:bg-secondary active:bg-secondary-active"
         }`}
       >
         <div className="flex items-center justify-between w-full">
           <span className="text-sm font-bold">TOKENS</span>
-          <span className="text-3xl font-bold">{joinedCircles.length > 0 ? 1250 : 0}</span>
+          <span className="text-3xl font-bold">{tokens}</span>
         </div>
-        <div className="text-lg leading-none mt-1">◆</div>
       </Link>
 
-      {/* Wallet Bottom - 64px */}
+      {/* Wallet section */}
       <button
         onClick={() => setWalletOpen(!walletOpen)}
-        className="h-16 flex items-center justify-between px-6 border-t-2 border-mandinga-black hover:bg-mandinga-gray-100 transition-colors"
+        className="h-16 flex items-center justify-between px-6 border-t-2 border-border hover:bg-secondary active:bg-secondary-active transition-colors"
       >
         <div>
           <div className="text-xs font-bold mb-1">WALLET</div>
           <div className="text-sm font-mono">0x7a...c9d</div>
         </div>
-        <span className="text-lg">{walletOpen ? "▲" : "▼"}</span>
       </button>
     </aside>
   )

@@ -3,7 +3,6 @@ import Link from "next/link"
 import { useEffect } from "react"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
-import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
@@ -22,7 +21,9 @@ export default function CirclesPage() {
   const { nextRoundSeconds } = useTimer()
   const { joinedCircles } = useUser()
   const router = useRouter()
-  const { data: contractData, loading } = useCircleContractData(CIRCLE_CONTRACT_ADDRESS)
+
+  const hasJoinedCircle = joinedCircles.includes(CIRCLE_CONTRACT_ADDRESS)
+  const { data: contractData, loading } = useCircleContractData(hasJoinedCircle ? CIRCLE_CONTRACT_ADDRESS : undefined)
 
   useEffect(() => {
     if (nextRoundSeconds === 0) {
@@ -30,15 +31,11 @@ export default function CirclesPage() {
     }
   }, [nextRoundSeconds, router])
 
-  const hasJoinedCircle = joinedCircles.includes(CIRCLE_CONTRACT_ADDRESS)
-
   return (
     <div className="min-h-screen flex bg-white">
       <DesktopSidebar />
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-        <ContextBar location="CIRCLES" />
-
         {loading ? (
           <div className="divide-y-2 divide-black">
             <div className="block border-b-2 border-black bg-white p-4 sm:p-8 animate-pulse">
@@ -112,7 +109,7 @@ export default function CirclesPage() {
               href="/"
               className="block w-full h-16 bg-black text-white text-lg font-bold border-2 border-black hover:bg-gray-900 flex items-center justify-center"
             >
-              BROWSE CIRCLES
+              GET STARTED
             </Link>
           </div>
         ) : (

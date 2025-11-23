@@ -1,57 +1,62 @@
 "use client"
 
 interface AuctionSectionProps {
-  userWeight: number
   userBid: number
+  userWeight: number
   totalBids: number
-  activeBidders: number
-  distribution: Array<{
-    rank: number
-    isUser: boolean
-    percentage: number
-    amount: number
-  }>
+  bidders: number
+  maxBidders: number
+  distribution: Array<{ address: string; amount: number; weight: number }>
 }
 
-export function AuctionSection({ userWeight, userBid, totalBids, activeBidders, distribution }: AuctionSectionProps) {
+export function AuctionSection({
+  userBid,
+  userWeight,
+  totalBids,
+  bidders,
+  maxBidders,
+  distribution,
+}: AuctionSectionProps) {
   return (
     <div className="border-t-2 border-black">
-      <div className="bg-white p-6 border-b-2 border-black">
-        <h2 className="text-xl font-bold">AUCTION STATUS</h2>
+      <div className="bg-gray-100 p-4 border-b-2 border-black">
+        <h2 className="text-lg font-bold">AUCTION STATUS</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 divide-y-2 md:divide-y-0 md:divide-x-2 divide-black border-b-2 border-black">
-        <div className="p-8">
+      {/* Primary metrics */}
+      <div className="grid grid-cols-2 divide-x-2 divide-black border-b-2 border-black">
+        <div className="p-6">
           <div className="text-sm mb-2">YOUR WEIGHT</div>
-          <div className="text-6xl font-bold mb-2">{userWeight.toFixed(1)}%</div>
-          <div className="text-sm text-gray-600">
+          <div className="text-5xl font-bold mb-2">{userWeight.toFixed(1)}%</div>
+          <div className="text-sm">
             Your bid: {userBid} SCT ({userWeight.toFixed(1)}%)
           </div>
         </div>
-        <div className="p-8">
-          <div className="text-sm mb-2">TOTAL BIDS</div>
-          <div className="text-6xl font-bold mb-2">{totalBids}</div>
-          <div className="text-sm text-gray-600">
-            Bidders: {activeBidders}/{activeBidders} active
+        <div className="p-6">
+          <div className="text-sm mb-2">TOTAL TOKENS</div>
+          <div className="text-5xl font-bold mb-2">{totalBids}</div>
+          <div className="text-sm">
+            Bidders: {bidders}/{maxBidders} active
           </div>
         </div>
       </div>
 
-      <div className="p-8">
-        <h3 className="text-lg font-bold mb-6">CURRENT DISTRIBUTION</h3>
-        <div className="space-y-4">
-          {distribution.map((item) => (
-            <div key={item.rank} className="flex items-center gap-4">
-              <div className="w-12 text-sm font-bold">{item.isUser ? "YOU" : `#${item.rank}`}</div>
-              <div className="flex-1 h-12 border-2 border-black bg-white overflow-hidden">
+      {/* Current distribution ranking */}
+      <div className="p-6 pb-4 border-b-2 border-black">
+        <div className="text-sm font-bold mb-4">CURRENT DISTRIBUTION</div>
+        <div className="space-y-2">
+          {distribution.map((entry, index) => (
+            <div key={entry.address} className="flex items-center gap-4">
+              <div className="w-20 text-sm font-bold">{entry.address === "YOU" ? "YOU" : `#${index + 1}`}</div>
+              <div className="flex-1 h-8 border-2 border-black bg-white">
                 <div
-                  className={`h-full ${item.isUser ? "bg-black" : "bg-gray-400"}`}
-                  style={{ width: `${item.percentage}%` }}
+                  className={`h-full ${entry.address === "YOU" ? "bg-black" : "bg-gray-400"}`}
+                  style={{ width: `${entry.weight}%` }}
                 />
               </div>
               <div className="w-24 text-right">
-                <div className="text-lg font-bold">{item.percentage}%</div>
-                <div className="text-xs text-gray-600">{item.amount} SCT</div>
+                <div className="font-bold">{entry.weight.toFixed(0)}%</div>
+                <div className="text-xs">{entry.amount} SCT</div>
               </div>
             </div>
           ))}

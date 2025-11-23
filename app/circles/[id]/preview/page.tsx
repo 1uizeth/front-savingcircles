@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
-import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
@@ -17,7 +16,7 @@ export default function CirclePreviewPage() {
   const rawCircleId = params?.id
   const circleId = Array.isArray(rawCircleId) ? rawCircleId[0] : rawCircleId
   const { nextRoundSeconds } = useTimer()
-  const { isJoined, joinCircle, tokens, getBidForCircle } = useUser()
+  const { isJoined, joinCircle, tokens, hasBidForCircle, getBidForCircle } = useUser()
   const [showModal, setShowModal] = useState(false)
   const [step, setStep] = useState<"confirm" | "success">("confirm")
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
@@ -33,37 +32,11 @@ export default function CirclePreviewPage() {
   const totalRounds = contractData?.numRounds ?? 10
   const displayRound = contractData ? Math.max(1, contractData.currRound + 1) : 1
   const prizeAmount = contractData ? contractData.installmentSize * contractData.numRounds : 0
-  const membersCount = contractData?.numUsers ?? 2
+  const membersCount = contractData?.numUsers ?? 0
 
   const userIsJoined = isJoined(circleId)
-
+  const userHasBidForCircle = hasBidForCircle(circleId)
   const bidData = getBidForCircle(circleId)
-  const userHasBid = bidData !== null && bidData.userBid > 0
-
-  const mockTotalBids = 800
-  const userBidAmount = bidData?.userBid ?? 0
-  const totalBidsWithUser = mockTotalBids + userBidAmount
-  const userWeight = totalBidsWithUser > 0 ? (userBidAmount / totalBidsWithUser) * 100 : 0
-
-  const mockDistribution = [
-    { rank: 1, isUser: false, percentage: 50, amount: 500 },
-    { rank: 2, isUser: false, percentage: 30, amount: 300 },
-  ]
-
-  const distributionWithUser = userHasBid
-    ? [
-        ...mockDistribution.map((d) => ({
-          ...d,
-          percentage: (d.amount / totalBidsWithUser) * 100,
-        })),
-        {
-          rank: 0,
-          isUser: true,
-          percentage: userWeight,
-          amount: userBidAmount,
-        },
-      ].sort((a, b) => b.amount - a.amount)
-    : mockDistribution
 
   const formatTime = (seconds: number) => {
     if (seconds >= 24 * 60 * 60) {
@@ -93,9 +66,40 @@ export default function CirclePreviewPage() {
     router.refresh()
   }
 
-  const handleJoinAuction = () => {
-    router.push("/tokens")
+  const totalBidsAmount = contractData?.totalBids ?? 1000
+  const userBidAmount = bidData?.userBid ?? 0
+
+  const otherBidders = [
+    { address: "0x3e9c", amount: 300 },
+    { address: "0x7a2f", amount: 200 },
+  ]
+
+  const actualTotalBids = userBidAmount + otherBidders.reduce((sum, b) => sum + b.amount, 0)
+  const activeBidders = otherBidders.length
+
+  const mockAuctionData = {
+    userBid: userBidAmount,
+    userWeight: userBidAmount > 0 ? (userBidAmount / actualTotalBids) * 100 : 0,
+    totalBids: actualTotalBids,
+    bidders: activeBidders,
+    maxBidders: 3,
+    distribution: [
+      {
+        address: "YOU",
+        amount: userBidAmount,
+        weight: userBidAmount > 0 ? (userBidAmount / actualTotalBids) * 100 : 0,
+      },
+      ...otherBidders.map((bidder) => ({
+        address: bidder.address,
+        amount: bidder.amount,
+        weight: (bidder.amount / actualTotalBids) * 100,
+      })),
+    ]
+      .filter((entry) => entry.amount > 0)
+      .sort((a, b) => b.amount - a.amount),
   }
+
+  const userHasTokens = tokens > 0
 
   if (!circleId) {
     return (
@@ -117,7 +121,6 @@ export default function CirclePreviewPage() {
       <div className="min-h-screen flex bg-white">
         <DesktopSidebar />
         <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-          <ContextBar location="CIRCLE DETAILS" />
           <div className="animate-pulse">
             <div className="bg-gray-300 p-4 border-b-2 border-black h-20"></div>
             <div className="border-b-2 border-black p-8">
@@ -168,11 +171,16 @@ export default function CirclePreviewPage() {
         <DesktopSidebar />
 
         <main className="flex-1 md:ml-[240px] pb-32 md:pb-24">
-          <ContextBar location="CIRCLE DETAILS" />
-
-          <div className="bg-[#2D4B8E] text-white p-4 border-b-2 border-black">
-            <div className="text-xs uppercase mb-1">CONTRACT</div>
-            <div className="text-sm font-mono break-all">{contractAddress}</div>
+          <div className="bg-selection text-selection-foreground p-4 border-b-2 border-black">
+            <div className="text-xs uppercase mb-1 opacity-80">CONTRACT</div>
+            <a
+              href={`https://sepolia.etherscan.io/address/${contractAddress}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-mono break-all hover:underline"
+            >
+              {contractAddress}
+            </a>
           </div>
 
           <div className="border-b-2 border-black p-8">
@@ -217,17 +225,18 @@ export default function CirclePreviewPage() {
             </div>
           </div>
 
-          {userIsJoined && userHasBid && (
+          {userIsJoined && userHasBidForCircle && bidData && (
             <AuctionSection
-              userWeight={userWeight}
               userBid={userBidAmount}
-              totalBids={totalBidsWithUser}
-              activeBidders={distributionWithUser.length}
-              distribution={distributionWithUser}
+              userWeight={mockAuctionData.userWeight}
+              totalBids={mockAuctionData.totalBids}
+              bidders={mockAuctionData.bidders}
+              maxBidders={mockAuctionData.maxBidders}
+              distribution={mockAuctionData.distribution}
             />
           )}
 
-          <div className="fixed bottom-0 left-0 right-0 md:left-[240px] border-t-2 border-black bg-white p-4 z-40">
+          <div className="fixed bottom-0 left-0 right-0 md:left-[240px] border-t-2 border-black bg-white p-4 z-40 mb-[72px] md:mb-0">
             {userIsJoined ? (
               <div className="flex gap-2">
                 <button
@@ -236,10 +245,10 @@ export default function CirclePreviewPage() {
                 >
                   PAY INSTALLMENT
                 </button>
-                {tokens > 0 && !userHasBid && (
+                {userHasTokens && (
                   <button
-                    onClick={handleJoinAuction}
-                    className="flex-1 h-16 text-xl font-bold border-2 border-black bg-[#FFE500] text-black hover:bg-yellow-400 transition-colors"
+                    onClick={() => router.push("/tokens")}
+                    className="flex-1 h-16 text-xl font-bold border-2 border-black bg-accent text-accent-foreground hover:bg-accent-hover transition-colors"
                   >
                     JOIN AUCTION
                   </button>
@@ -248,7 +257,7 @@ export default function CirclePreviewPage() {
             ) : (
               <button
                 onClick={handleJoinClick}
-                className="w-full h-16 text-2xl font-bold border-2 border-black bg-white hover:bg-gray-100 transition-colors"
+                className="w-full h-16 text-2xl font-bold border-2 border-black bg-accent text-accent-foreground hover:bg-accent-hover transition-colors"
               >
                 JOIN CIRCLE
               </button>
@@ -260,17 +269,16 @@ export default function CirclePreviewPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80" onClick={() => setShowModal(false)} />
-
-          <div className="relative w-full max-w-md">
+        <>
+          <div className="fixed inset-0 z-[89] bg-black/95" />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
             {step === "confirm" && (
-              <div className="bg-white border-4 border-black">
-                <div className="h-14 bg-gray-100 flex items-center px-6 border-b-2 border-black">
-                  <h2 className="text-lg font-bold">CONFIRM PURCHASE</h2>
+              <div className="bg-white border-4 border-black shadow-2xl">
+                <div className="h-14 bg-white flex items-center px-6 border-b-2 border-black">
+                  <h2 className="text-lg font-bold">JOIN CIRCLE</h2>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 bg-white">
                   <div>
                     <p className="text-sm mb-2">You're joining:</p>
                     <p className="text-2xl font-bold">${prizeAmount.toLocaleString()} Circle</p>
@@ -293,7 +301,7 @@ export default function CirclePreviewPage() {
                   </p>
                 </div>
 
-                <div className="p-4 flex gap-2 border-t-2 border-black">
+                <div className="p-4 flex gap-2 border-t-2 border-black bg-white">
                   <button
                     onClick={() => setShowModal(false)}
                     className="flex-1 h-12 bg-white text-black font-bold border-2 border-black hover:bg-gray-100"
@@ -302,7 +310,7 @@ export default function CirclePreviewPage() {
                   </button>
                   <button
                     onClick={handleConfirm}
-                    className="flex-1 h-12 bg-black text-white font-bold border-2 border-black hover:bg-gray-900"
+                    className="flex-1 h-12 bg-accent text-accent-foreground font-bold border-2 border-black hover:bg-accent-hover"
                   >
                     CONFIRM
                   </button>
@@ -311,7 +319,7 @@ export default function CirclePreviewPage() {
             )}
 
             {step === "success" && (
-              <div className="bg-white border-4 border-black p-8 text-center space-y-6">
+              <div className="bg-white border-4 border-black shadow-2xl p-8 text-center space-y-6">
                 <div className="flex justify-center">
                   <div className="w-16 h-16 bg-green-500 flex items-center justify-center text-4xl text-white font-bold border-2 border-black">
                     ✓
@@ -338,7 +346,7 @@ export default function CirclePreviewPage() {
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
 
       {userIsJoined && contractData && (

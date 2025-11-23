@@ -57,7 +57,7 @@ export default function ResultPage() {
         <ContextBar location={`ROUND ${result.round} — RESULT`} phase="result" />
 
         {/* Demo Controls - Fixed bottom on mobile, top-right on desktop */}
-        <div className="fixed bottom-20 left-0 right-0 md:bottom-auto md:top-20 md:right-4 md:left-auto z-40 flex gap-2 p-4 md:p-0 bg-white md:bg-transparent border-t-2 md:border-0 border-black">
+        <div className="fixed bottom-20 left-0 right-0 md:bottom-auto md:top-20 md:right-4 md:left-auto z-30 flex gap-2 p-4 md:p-0 bg-white md:bg-transparent border-t-2 md:border-0 border-black">
           <button
             onClick={() => setDemoOutcome("winner")}
             className={`flex-1 md:flex-none px-4 py-2 text-xs font-bold border-2 border-black ${

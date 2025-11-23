@@ -1,5 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
+import type React from "react"
+
 import { useTimer } from "@/contexts/timer-context"
 
 interface ContextBarProps {
@@ -32,17 +34,15 @@ export function ContextBar({ location, phase = "auction", nextRoundSeconds }: Co
     return `${hours}H ${minutes}M ${secs}S`
   }
 
-  const phaseColors = {
-    contribution: "bg-green-900",
-    auction: "bg-blue-900",
-    drawing: "bg-orange-900",
-    result: "bg-purple-900",
+  const phaseStyles = {
+    contribution: "bg-success text-success-foreground border-success-foreground",
+    auction: "bg-accent text-accent-foreground border-accent-foreground",
+    drawing: "bg-warning text-warning-foreground border-warning-foreground",
+    result: "bg-muted text-muted-foreground border-muted-foreground",
   }
 
   return (
-    <div
-      className={`h-16 ${phaseColors[phase]} text-mandinga-white flex items-center justify-between px-4 md:px-6 border-b-2 border-mandinga-black`}
-    >
+    <div className={`h-16 ${phaseStyles[phase]} flex items-center justify-between px-4 md:px-6 border-b-2`}>
       {/* Left: Location */}
       <h2 className="text-base font-bold leading-tight">{location}</h2>
 
@@ -56,7 +56,19 @@ export function ContextBar({ location, phase = "auction", nextRoundSeconds }: Co
 
           <button
             onClick={skipToNextRound}
-            className="w-8 h-8 flex items-center justify-center border-2 border-mandinga-white hover:bg-mandinga-white hover:text-mandinga-black transition-colors flex-shrink-0"
+            className="w-8 h-8 flex items-center justify-center border-2 border-current hover:bg-current hover:text-[var(--bg-color)] transition-colors flex-shrink-0"
+            style={
+              {
+                "--bg-color":
+                  phase === "contribution"
+                    ? "hsl(var(--success))"
+                    : phase === "auction"
+                      ? "hsl(var(--accent))"
+                      : phase === "drawing"
+                        ? "hsl(var(--warning))"
+                        : "hsl(var(--muted))",
+              } as React.CSSProperties
+            }
             title="Skip to next round"
           >
             <span className="text-lg leading-none">▶</span>

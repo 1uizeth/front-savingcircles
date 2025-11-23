@@ -4,76 +4,125 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Mandinga brutalist colors mapped to shadcn tokens */
-  --mandinga-black: #000000;
-  --mandinga-white: #ffffff;
-  --mandinga-electric-blue: #0066ff;
-  --mandinga-gray-100: #f5f5f5;
-  --mandinga-gray-200: #e5e5e5;
-  --mandinga-gray-300: #d4d4d4;
-  --mandinga-success: #00ff00;
-  --mandinga-error: #ff0000;
+  /* Core Color Palette - 4 main colors */
+  --color-black: 0 0% 0%;
+  --color-white: 0 0% 100%;
+  --color-yellow: 48 100% 62%; /* #FFEB3B */
+  --color-blue: 220 90% 48%; /* #0066FF */
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.548 0.228 264.05);
-  --accent-foreground: oklch(0 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Background Layers */
+  --background: var(--color-white); /* Base canvas */
+  --surface: 0 0% 98%; /* Elevated surface */
+  --surface-hover: 0 0% 96%; /* Hover state for surfaces */
+
+  /* Foreground & Text */
+  --foreground: var(--color-black);
+  --foreground-secondary: 0 0% 40%; /* Secondary text */
+  --foreground-tertiary: 0 0% 60%; /* Tertiary/hint text */
+
+  /* Interactive Elements */
+  --primary: var(--color-black);
+  --primary-foreground: var(--color-white);
+  --primary-hover: 0 0% 20%; /* Slightly lighter black on hover */
+  --primary-active: var(--color-black);
+
+  --secondary: 0 0% 96%;
+  --secondary-foreground: var(--color-black);
+  --secondary-hover: 0 0% 92%;
+  --secondary-active: 0 0% 88%;
+
+  /* Accent - Yellow for emphasis */
+  --accent: var(--color-yellow);
+  --accent-foreground: var(--color-black);
+  --accent-hover: 48 100% 58%;
+  --accent-active: 48 100% 54%;
+
+  /* Warning - Yellow for payments/alerts */
+  --warning: var(--color-yellow);
+  --warning-foreground: var(--color-black);
+  --warning-hover: 48 100% 58%;
+  --warning-active: 48 100% 54%;
+
+  /* Success - Green */
+  --success: 142 76% 36%;
+  --success-foreground: var(--color-white);
+
+  /* Destructive - Red */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: var(--color-white);
+
+  /* Borders & Dividers */
+  --border: var(--color-black);
+  --border-subtle: 0 0% 88%; /* Lighter borders for less emphasis */
+
+  /* Input & Form Elements */
+  --input: var(--color-black);
+  --input-background: var(--color-white);
+  --ring: var(--color-black); /* Focus ring */
+
+  /* Selection State */
+  --selection: var(--color-blue);
+  --selection-foreground: var(--color-white);
+
+  /* Muted */
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+
+  /* Card & Popover */
+  --card: var(--color-white);
+  --card-foreground: var(--color-black);
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-black);
+
+  /* Charts */
+  --chart-1: var(--color-blue);
+  --chart-2: var(--color-yellow);
+  --chart-3: 142 76% 36%;
+  --chart-4: 0 84% 60%;
+  --chart-5: 280 60% 50%;
+
   --radius: 0rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0 0 0);
-  --sidebar-primary: oklch(0 0 0);
-  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(0 0 0);
-  --sidebar-ring: oklch(0 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --background: var(--color-black);
+  --surface: 0 0% 8%;
+  --surface-hover: 0 0% 12%;
+
+  --foreground: var(--color-white);
+  --foreground-secondary: 0 0% 70%;
+  --foreground-tertiary: 0 0% 50%;
+
+  --primary: var(--color-white);
+  --primary-foreground: var(--color-black);
+  --primary-hover: 0 0% 90%;
+  --primary-active: var(--color-white);
+
+  --secondary: 0 0% 10%;
+  --secondary-foreground: var(--color-white);
+  --secondary-hover: 0 0% 14%;
+  --secondary-active: 0 0% 18%;
+
+  --border: var(--color-white);
+  --border-subtle: 0 0% 20%;
+
+  --input-background: 0 0% 8%;
+
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 60%;
+
+  --card: var(--color-black);
+  --card-foreground: var(--color-white);
+  --popover: var(--color-black);
+  --popover-foreground: var(--color-white);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -85,36 +134,70 @@
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback", system-ui, -apple-system, "Helvetica", "Arial", sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-surface: hsl(var(--surface));
+  --color-surface-hover: hsl(var(--surface-hover));
+  --color-foreground-secondary: hsl(var(--foreground-secondary));
+  --color-foreground-tertiary: hsl(var(--foreground-tertiary));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-primary-active: hsl(var(--primary-active));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-hover: hsl(var(--secondary-hover));
+  --color-secondary-active: hsl(var(--secondary-active));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-hover: hsl(var(--accent-hover));
+  --color-accent-active: hsl(var(--accent-active));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-hover: hsl(var(--warning-hover));
+  --color-warning-active: hsl(var(--warning-active));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-border-subtle: hsl(var(--border-subtle));
+  --color-input: hsl(var(--input));
+  --color-input-background: hsl(var(--input-background));
+  --color-ring: hsl(var(--ring));
+
+  --color-selection: hsl(var(--selection));
+  --color-selection-foreground: hsl(var(--selection-foreground));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -123,14 +206,6 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-mandinga-black: var(--mandinga-black);
-  --color-mandinga-white: var(--mandinga-white);
-  --color-mandinga-electric-blue: var(--mandinga-electric-blue);
-  --color-mandinga-gray-100: var(--mandinga-gray-100);
-  --color-mandinga-gray-200: var(--mandinga-gray-200);
-  --color-mandinga-gray-300: var(--mandinga-gray-300);
-  --color-mandinga-success: var(--mandinga-success);
-  --color-mandinga-error: var(--mandinga-error);
 }
 
 @layer base {
@@ -139,5 +214,10 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Selection styling */
+  ::selection {
+    @apply bg-selection text-selection-foreground;
   }
 }

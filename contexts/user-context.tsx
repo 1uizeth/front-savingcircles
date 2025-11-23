@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
 
 interface CircleAuctionData {
+  circleId: string
   userBid: number
   userWeight: number
 }
@@ -10,14 +11,15 @@ interface CircleAuctionData {
 interface UserContextType {
   joinedCircles: string[]
   tokens: number
-  circleBids: Record<string, CircleAuctionData>
+  circleBids: CircleAuctionData[]
   addTokens: (amount: number) => void
   subtractTokens: (amount: number) => void
   joinCircle: (circleId: string) => void
   leaveCircle: (circleId: string) => void
   isJoined: (circleId: string) => boolean
-  placeBid: (circleId: string, amount: number, weight: number) => void
-  getBidForCircle: (circleId: string) => CircleAuctionData | null
+  placeBid: (circleId: string, amount: number) => void
+  getBidForCircle: (circleId: string) => CircleAuctionData | undefined
+  hasBidForCircle: (circleId: string) => boolean
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -25,7 +27,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 export function UserProvider({ children }: { children: ReactNode }) {
   const [joinedCircles, setJoinedCircles] = useState<string[]>([])
   const [tokens, setTokens] = useState<number>(0)
-  const [circleBids, setCircleBids] = useState<Record<string, CircleAuctionData>>({})
+  const [circleBids, setCircleBids] = useState<CircleAuctionData[]>([])
 
   const addTokens = (amount: number) => {
     setTokens((prev) => prev + amount)
@@ -50,16 +52,33 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return joinedCircles.includes(circleId)
   }
 
-  const placeBid = (circleId: string, amount: number, weight: number) => {
-    setCircleBids((prev) => ({
-      ...prev,
-      [circleId]: { userBid: amount, userWeight: weight },
-    }))
-    subtractTokens(amount)
+  const placeBid = (circleId: string, amount: number) => {
+    setCircleBids((prev) => {
+      const existing = prev.find((bid) => bid.circleId === circleId)
+      if (existing) {
+        // Update existing bid
+        return prev.map((bid) =>
+          bid.circleId === circleId ? { ...bid, userBid: amount, userWeight: calculateWeight(amount) } : bid,
+        )
+      } else {
+        // Add new bid
+        return [...prev, { circleId, userBid: amount, userWeight: calculateWeight(amount) }]
+      }
+    })
   }
 
-  const getBidForCircle = (circleId: string): CircleAuctionData | null => {
-    return circleBids[circleId] || null
+  const getBidForCircle = (circleId: string) => {
+    return circleBids.find((bid) => bid.circleId === circleId)
+  }
+
+  const hasBidForCircle = (circleId: string) => {
+    return circleBids.some((bid) => bid.circleId === circleId)
+  }
+
+  // Simple weight calculation for demo purposes
+  const calculateWeight = (amount: number) => {
+    const totalBids = 420 // Mock total
+    return (amount / totalBids) * 100
   }
 
   return (
@@ -75,6 +94,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         isJoined,
         placeBid,
         getBidForCircle,
+        hasBidForCircle,
       }}
     >
       {children}

@@ -8,6 +8,7 @@ import MobileBottomNav from "@/components/mobile-bottom-nav"
 import DesktopSidebar from "@/components/desktop-sidebar"
 import ContextBar from "@/components/context-bar"
 import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
 
 export default function JoinCirclePage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -67,15 +68,15 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
           <ContextBar location={`JOIN ${circleName}`} nextRoundSeconds={nextRoundSeconds} />
 
           <main className="pb-16 md:pb-0">
-            {step === "confirm" && (
-              <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4">
-                {/* Confirmation Card */}
-                <div className="w-full max-w-md bg-white border-4 border-black">
-                  <div className="h-14 bg-gray-100 flex items-center px-6 border-b-2 border-black">
-                    <h2 className="text-lg font-bold">CONFIRM PURCHASE</h2>
+            <DialogPrimitive.Root open={step === "confirm"} onOpenChange={(open) => !open && router.back()}>
+              <DialogPrimitive.Portal>
+                <DialogPrimitive.Overlay className="fixed inset-0 z-[89] bg-black/95" />
+                <DialogPrimitive.Content className="fixed top-[50%] left-[50%] z-[90] w-full max-w-md translate-x-[-50%] translate-y-[-50%] border-4 border-black bg-white shadow-2xl">
+                  <div className="h-14 bg-white flex items-center px-6 border-b-2 border-black">
+                    <h2 className="text-lg font-bold">JOIN CIRCLE</h2>
                   </div>
 
-                  <div className="p-6 space-y-6">
+                  <div className="p-6 space-y-6 bg-white">
                     <div>
                       <p className="text-sm mb-2">You're buying a ticket to:</p>
                       <p className="text-2xl font-bold">{circleName}</p>
@@ -101,7 +102,7 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
                     </p>
                   </div>
 
-                  <div className="p-4 flex gap-2 border-t-2 border-black">
+                  <div className="p-4 flex gap-2 border-t-2 border-black bg-white">
                     <button
                       onClick={() => router.back()}
                       className="flex-1 h-12 bg-white text-black font-bold border-2 border-black hover:bg-gray-100"
@@ -110,52 +111,55 @@ export default function JoinCirclePage({ params }: { params: { id: string } }) {
                     </button>
                     <button
                       onClick={handleConfirm}
-                      className="flex-1 h-12 bg-black text-white font-bold border-2 border-black hover:bg-gray-900"
+                      className="flex-1 h-12 bg-accent text-accent-foreground font-bold border-2 border-black hover:bg-accent-hover"
                     >
                       CONFIRM
                     </button>
                   </div>
-                </div>
-              </div>
-            )}
+                </DialogPrimitive.Content>
+              </DialogPrimitive.Portal>
+            </DialogPrimitive.Root>
 
-            {step === "success" && (
-              <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4">
-                <div className="w-full max-w-md text-center space-y-6">
-                  <div className="flex justify-center">
-                    <div className="w-16 h-16 bg-green-500 flex items-center justify-center text-4xl text-white font-bold border-2 border-black">
-                      ✓
+            <DialogPrimitive.Root open={step === "success"} onOpenChange={(open) => !open && handlePayLater()}>
+              <DialogPrimitive.Portal>
+                <DialogPrimitive.Overlay className="fixed inset-0 z-[89] bg-black/95" />
+                <DialogPrimitive.Content className="fixed top-[50%] left-[50%] z-[90] w-full max-w-md translate-x-[-50%] translate-y-[-50%] border-4 border-black bg-white shadow-2xl">
+                  <div className="bg-white p-8 text-center space-y-6">
+                    <div className="flex justify-center">
+                      <div className="w-16 h-16 bg-green-500 flex items-center justify-center text-4xl text-white font-bold border-2 border-black">
+                        ✓
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h1 className="text-3xl font-bold">YOU'RE NOW A MEMBER</h1>
+                      <p className="text-lg">Welcome to {circleName}</p>
+                    </div>
+
+                    <div className="pt-4">
+                      <p className="text-sm">
+                        Next: Pay your first installment to enter Round {Math.max(1, contractData.currRound + 1)}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 pt-6">
+                      <button
+                        onClick={handlePayNow}
+                        className="w-full h-12 bg-black text-white font-bold border-2 border-black hover:bg-gray-900"
+                      >
+                        PAY INSTALLMENT NOW
+                      </button>
+                      <button
+                        onClick={handlePayLater}
+                        className="w-full h-12 bg-white text-black font-bold border-2 border-black hover:bg-gray-100"
+                      >
+                        I'LL DO IT LATER
+                      </button>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <h1 className="text-3xl font-bold">YOU'RE NOW A MEMBER</h1>
-                    <p className="text-lg">Welcome to {circleName}</p>
-                  </div>
-
-                  <div className="pt-4">
-                    <p className="text-sm">
-                      Next: Pay your first installment to enter Round {Math.max(1, contractData.currRound + 1)}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 pt-6">
-                    <button
-                      onClick={handlePayNow}
-                      className="w-full h-12 bg-black text-white font-bold border-2 border-black hover:bg-gray-900"
-                    >
-                      PAY INSTALLMENT NOW
-                    </button>
-                    <button
-                      onClick={handlePayLater}
-                      className="w-full h-12 bg-white text-black font-bold border-2 border-black hover:bg-gray-100"
-                    >
-                      I'LL DO IT LATER
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+                </DialogPrimitive.Content>
+              </DialogPrimitive.Portal>
+            </DialogPrimitive.Root>
           </main>
         </div>
       </div>
