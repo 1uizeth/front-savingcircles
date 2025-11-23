@@ -19,15 +19,34 @@ export type CircleContractData = {
   roundDeadline: number
 }
 
-const DEFAULT_ALCHEMY_KEY = "5eMnDYb8SsrseqleUSYcq-Hr_Rt-1n26"
+const DEFAULT_RPC_URL = "https://eth-sepolia.g.alchemy.com/v2/5eMnDYb8SsrseqleUSYcq-Hr_Rt-1n26"
 
-const getDefaults = () => ({
-  rpc:
-    process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ||
-    (process.env.NEXT_PUBLIC_ALCHEMY_API_KEY
-      ? `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
-      : `https://eth-sepolia.g.alchemy.com/v2/${DEFAULT_ALCHEMY_KEY}`),
-})
+const getDefaults = () => {
+  console.log("[v0] Raw env var:", process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL)
+
+  let rpcUrl = process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || DEFAULT_RPC_URL
+
+  // Strip any potential environment variable artifacts like "VAR_NAME=value"
+  if (rpcUrl.includes("=")) {
+    const parts = rpcUrl.split("=")
+    rpcUrl = parts.slice(1).join("=")
+  }
+
+  if (rpcUrl.endsWith("/v2/") || rpcUrl.endsWith("/v2")) {
+    console.warn("[v0] RPC URL is incomplete (missing API key), using default")
+    rpcUrl = DEFAULT_RPC_URL
+  }
+
+  // Validate the URL
+  if (!rpcUrl.startsWith("http://") && !rpcUrl.startsWith("https://")) {
+    console.warn("[v0] Invalid RPC URL, using default:", DEFAULT_RPC_URL)
+    rpcUrl = DEFAULT_RPC_URL
+  }
+
+  console.log("[v0] Final RPC URL:", rpcUrl)
+
+  return { rpc: rpcUrl }
+}
 
 export function useCircleContractData(address?: string) {
   const [data, setData] = useState<CircleContractData | null>(null)
@@ -45,7 +64,20 @@ export function useCircleContractData(address?: string) {
     }
 
     let cancelled = false
-    const provider = new JsonRpcProvider(rpc)
+
+    let provider: JsonRpcProvider
+    try {
+      provider = new JsonRpcProvider(rpc, {
+        chainId: 11155111,
+        name: "sepolia",
+      })
+    } catch (err) {
+      console.error("[v0] Failed to create provider:", err)
+      setError("Failed to initialize blockchain connection")
+      setLoading(false)
+      return
+    }
+
     const contract = new Contract(address, savingCircleAbi, provider)
 
     const fetchData = async () => {
@@ -101,7 +133,8 @@ export function useCircleContractData(address?: string) {
         })
       } catch (err) {
         if (cancelled) return
-        setError(err instanceof Error ? err.message : "Failed to load circle data")
+        console.error("[v0] Contract fetch error:", err)
+        setError(err instanceof Error ? err.message : "Failed to load on-chain data")
       } finally {
         if (!cancelled) {
           setLoading(false)
@@ -118,4 +151,3 @@ export function useCircleContractData(address?: string) {
 
   return { data, loading, error }
 }
-

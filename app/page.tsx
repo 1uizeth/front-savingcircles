@@ -7,97 +7,115 @@ import { ContextBar } from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
-import { allCircles } from "@/lib/mock-data"
+import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
 
 const formatTime = (seconds: number) => {
-  if (seconds >= 24 * 60 * 60) {
-    const days = Math.floor(seconds / (24 * 60 * 60))
-    return `${days}d`
-  }
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  return `${hours}h ${minutes}m`
+  const secs = seconds % 60
+  return `${hours}h ${minutes}m ${secs}s`
 }
+
+const CIRCLE_CONTRACT_ADDRESS = "0xfDF73F61146B9050FFe4b755364B9CAC670ea5b2"
 
 export default function HomePage() {
   const { nextRoundSeconds } = useTimer()
   const { isJoined } = useUser()
   const router = useRouter()
+  const { data: contractData, loading, error } = useCircleContractData(CIRCLE_CONTRACT_ADDRESS)
 
   useEffect(() => {
     if (nextRoundSeconds === 0) {
-      router.push("/circles/1/result")
+      router.push(`/circles/${CIRCLE_CONTRACT_ADDRESS}/result`)
     }
   }, [nextRoundSeconds, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex bg-white">
+        <DesktopSidebar />
+        <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
+          <ContextBar location="BROWSE CIRCLES" />
+          <div className="p-8 text-center">Loading circles...</div>
+        </main>
+        <MobileBottomNav />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex bg-white">
+        <DesktopSidebar />
+        <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
+          <ContextBar location="BROWSE CIRCLES" />
+          <div className="p-8 text-center text-red-600">Error loading circles: {error}</div>
+        </main>
+        <MobileBottomNav />
+      </div>
+    )
+  }
+
+  if (!contractData) {
+    return (
+      <div className="min-h-screen flex bg-white">
+        <DesktopSidebar />
+        <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
+          <ContextBar location="BROWSE CIRCLES" />
+          <div className="p-8 text-center">No circles available</div>
+        </main>
+        <MobileBottomNav />
+      </div>
+    )
+  }
+
+  const userIsJoined = isJoined(CIRCLE_CONTRACT_ADDRESS)
+  const goalAmount = contractData.installmentSize * contractData.numRounds
 
   return (
     <div className="min-h-screen flex bg-white">
       <DesktopSidebar />
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-        <ContextBar location="BROWSE CIRCLES" nextRoundSeconds={nextRoundSeconds} />
+        <ContextBar location="BROWSE CIRCLES" />
 
-        {/* Circle List - All available circles */}
+        {/* Circle List - Showing the deployed contract circle */}
         <div className="divide-y-2 divide-black">
-          {allCircles.map((circle) => {
-            const phaseColor =
-              circle.phase === "contribution"
-                ? "bg-[#E8FFE8]"
-                : circle.phase === "auction"
-                  ? "bg-[#E8F4FF]"
-                  : circle.phase === "drawing"
-                    ? "bg-[#FFF4E8]"
-                    : "bg-white"
-
-            const userIsJoined = isJoined(circle.id)
-
-            return (
-              <Link
-                key={circle.id}
-                href={userIsJoined ? `/circles/${circle.id}` : `/circles/${circle.id}/preview`}
-                className={`block ${phaseColor} hover:bg-gray-100 transition-colors border-b-2 border-black`}
-              >
-                <div className="p-8">
-                  {/* Header Row */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <div className="text-4xl font-bold mb-2">{circle.name}</div>
-                      <div className="text-sm">
-                        ROUND {circle.round} • {circle.phase.toUpperCase()}
-                        {userIsJoined && <span className="ml-2 text-green-600">● JOINED</span>}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm mb-1">TIME LEFT</div>
-                      <div className="text-2xl font-bold">{formatTime(circle.timeLeft)}</div>
-                    </div>
+          <Link
+            href={userIsJoined ? `/circles/${CIRCLE_CONTRACT_ADDRESS}` : `/circles/${CIRCLE_CONTRACT_ADDRESS}/preview`}
+            className="block bg-white hover:bg-gray-100 transition-colors border-b-2 border-black"
+          >
+            <div className="p-4 sm:p-8">
+              {/* Header Row - Round and Goal */}
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+                <div className="flex-1">
+                  <div className="text-sm mb-2">
+                    ROUND {contractData.currRound} OF {contractData.numRounds}
+                    {userIsJoined && <span className="ml-2 text-green-600">● JOINED</span>}
                   </div>
+                  <div className="text-3xl sm:text-4xl font-bold">${goalAmount}</div>
+                </div>
+                <div className="text-left sm:text-right">
+                  <div className="text-sm mb-1">NEXT ROUND IN</div>
+                  <div className="text-xl sm:text-2xl font-bold">{formatTime(nextRoundSeconds)}</div>
+                </div>
+              </div>
 
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <div className="text-xs mb-1">PRIZE</div>
-                      <div className="text-xl font-bold">{circle.prize} USDC</div>
-                    </div>
-                    <div>
-                      <div className="text-xs mb-1">MEMBERS</div>
-                      <div className="text-xl font-bold">
-                        {circle.members}/{circle.maxMembers}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs mb-1">INSTALLMENT</div>
-                      <div className="text-xl font-bold">{circle.installment} USDC / ROUND</div>
-                    </div>
-                    <div>
-                      <div className="text-xs mb-1">TICKET</div>
-                      <div className="text-xl font-bold">{circle.ticketPrice} USDC</div>
-                    </div>
+              {/* Bottom Row - Installment and Members aligned at the top */}
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs mb-1">INSTALLMENT</div>
+                  <div className="text-lg sm:text-xl font-bold">${contractData.installmentSize} / ROUND</div>
+                </div>
+                <div className="text-left sm:text-right">
+                  <div className="text-xs mb-1">MEMBERS</div>
+                  <div className="text-lg sm:text-xl font-bold">
+                    {contractData.numUsers}/{contractData.numRounds}
                   </div>
                 </div>
-              </Link>
-            )
-          })}
+              </div>
+            </div>
+          </Link>
         </div>
       </main>
 

@@ -7,39 +7,39 @@ import ContextBar from "@/components/context-bar"
 import { useTimer } from "@/contexts/timer-context"
 import { useUser } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
-import { allCircles } from "@/lib/mock-data"
+import { useCircleContractData } from "@/lib/hooks/use-circle-contract-data"
 
 const formatTime = (seconds: number) => {
-  if (seconds >= 24 * 60 * 60) {
-    const days = Math.floor(seconds / (24 * 60 * 60))
-    return `${days}d`
-  }
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  return `${hours}h ${minutes}m`
+  const secs = seconds % 60
+  return `${hours}h ${minutes}m ${secs}s`
 }
+
+const CIRCLE_CONTRACT_ADDRESS = "0xfDF73F61146B9050FFe4b755364B9CAC670ea5b2"
 
 export default function CirclesPage() {
   const { nextRoundSeconds } = useTimer()
   const { joinedCircles } = useUser()
   const router = useRouter()
+  const { data: contractData, loading } = useCircleContractData(CIRCLE_CONTRACT_ADDRESS)
 
   useEffect(() => {
     if (nextRoundSeconds === 0) {
-      router.push(`/circles/1/result`)
+      router.push(`/circles/${CIRCLE_CONTRACT_ADDRESS}/result`)
     }
   }, [nextRoundSeconds, router])
 
-  const myCircles = allCircles.filter((circle) => joinedCircles.includes(circle.id))
+  const hasJoinedCircle = joinedCircles.includes(CIRCLE_CONTRACT_ADDRESS)
 
   return (
     <div className="min-h-screen flex bg-white">
       <DesktopSidebar />
 
       <main className="flex-1 md:ml-[240px] pb-20 md:pb-0">
-        <ContextBar location="CIRCLES" nextRoundSeconds={nextRoundSeconds} />
+        <ContextBar location="CIRCLES" />
 
-        {myCircles.length === 0 ? (
+        {!hasJoinedCircle || loading || !contractData ? (
           <div className="p-8 max-w-2xl mx-auto">
             <div className="text-center mb-12 pt-8">
               <div className="text-4xl font-bold mb-4">NO CIRCLES YET</div>
@@ -92,60 +92,46 @@ export default function CirclesPage() {
           </div>
         ) : (
           <div className="divide-y-2 divide-black">
-            {myCircles.map((circle) => {
-              const phaseColor =
-                circle.phase === "contribution"
-                  ? "bg-[#E8FFE8]"
-                  : circle.phase === "auction"
-                    ? "bg-[#E8F4FF]"
-                    : circle.phase === "drawing"
-                      ? "bg-[#FFF4E8]"
-                      : "bg-white"
-
-              return (
-                <Link
-                  key={circle.id}
-                  href={`/circles/${circle.id}`}
-                  className={`block ${phaseColor} hover:bg-gray-100 transition-colors border-b-2 border-black`}
-                >
-                  <div className="p-8">
-                    <div className="flex items-start justify-between mb-6">
-                      <div>
-                        <div className="text-4xl font-bold mb-2">{circle.name}</div>
-                        <div className="text-sm">
-                          ROUND {circle.round} • {circle.phase.toUpperCase()}
-                        </div>
-                        <div className="mt-1 text-[11px] uppercase tracking-wide text-gray-500">CONTRACT</div>
-                        <div className="text-xs font-mono break-all">{circle.address}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm mb-1">TIME LEFT</div>
-                        <div className="text-2xl font-bold">{formatTime(circle.timeLeft)}</div>
-                      </div>
+            <Link
+              href={`/circles/${CIRCLE_CONTRACT_ADDRESS}`}
+              className="block bg-white hover:bg-gray-100 transition-colors border-b-2 border-black"
+            >
+              <div className="p-4 sm:p-8">
+                {/* Header Row - Round and Goal */}
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+                  <div className="flex-1">
+                    <div className="text-sm mb-2">
+                      ROUND {contractData.currRound} OF {contractData.numRounds}
                     </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <div className="text-xs mb-1">PRIZE</div>
-                        <div className="text-xl font-bold">{circle.prize} MNDG</div>
-                      </div>
-                      <div>
-                        <div className="text-xs mb-1">MEMBERS</div>
-                        <div className="text-xl font-bold">{circle.members}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs mb-1">INSTALLMENT</div>
-                        <div className="text-xl font-bold">{circle.installment} MNDG</div>
-                      </div>
-                      <div>
-                        <div className="text-xs mb-1">POOL</div>
-                        <div className="text-xl font-bold">{circle.totalContributions} MNDG</div>
-                      </div>
+                    <div className="text-3xl sm:text-4xl font-bold">
+                      ${contractData.installmentSize * contractData.numRounds}
                     </div>
                   </div>
-                </Link>
-              )
-            })}
+                  <div className="text-left sm:text-right">
+                    <div className="text-sm mb-1">NEXT ROUND IN</div>
+                    <div className="text-xl sm:text-2xl font-bold">{formatTime(nextRoundSeconds)}</div>
+                  </div>
+                </div>
+
+                {/* Contract Address */}
+                <div className="mb-6">
+                  <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">CONTRACT</div>
+                  <div className="text-xs font-mono break-all">{CIRCLE_CONTRACT_ADDRESS}</div>
+                </div>
+
+                {/* Bottom Row - Installment and Members aligned at the top */}
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                  <div>
+                    <div className="text-xs mb-1">INSTALLMENT</div>
+                    <div className="text-lg sm:text-xl font-bold">${contractData.installmentSize}</div>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <div className="text-xs mb-1">MEMBERS</div>
+                    <div className="text-lg sm:text-xl font-bold">{contractData.numUsers}</div>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
         )}
       </main>

@@ -1,8 +1,8 @@
 "use client"
 
-import { ConnectButton } from "@rainbow-me/rainbowkit"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { useUser } from "@/contexts/user-context"
 
 interface NavItem {
@@ -15,13 +15,9 @@ interface NavItem {
   hasActivity?: boolean
 }
 
-const formatAddress = (address?: string) => {
-  if (!address) return ""
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
-}
-
 export function DesktopSidebar() {
   const pathname = usePathname()
+  const [walletOpen, setWalletOpen] = useState(false)
   const { joinedCircles } = useUser()
 
   const navItems: NavItem[] = [
@@ -113,62 +109,16 @@ export function DesktopSidebar() {
       </Link>
 
       {/* Wallet Bottom - 64px */}
-      <ConnectButton.Custom>
-        {({
-          account,
-          chain,
-          mounted,
-          authenticationStatus,
-          openAccountModal,
-          openChainModal,
-          openConnectModal,
-        }) => {
-          const ready = mounted && authenticationStatus !== "loading"
-          const connected =
-            ready &&
-            account &&
-            chain &&
-            (!authenticationStatus || authenticationStatus === "authenticated")
-          const wrongChain = chain?.unsupported
-          const label = !ready
-            ? "..."
-            : wrongChain
-              ? "Switch network"
-              : connected
-                ? formatAddress(account.address)
-                : "Connect Wallet"
-
-          const handleClick = () => {
-            if (!ready) return
-            if (wrongChain) {
-              openChainModal()
-              return
-            }
-            if (connected) {
-              openAccountModal()
-              return
-            }
-            openConnectModal()
-          }
-
-          return (
-            <button
-              type="button"
-              onClick={handleClick}
-              disabled={!ready}
-              className="h-16 flex items-center justify-between px-6 border-t-2 border-mandinga-black hover:bg-mandinga-gray-100 transition-colors disabled:opacity-60"
-            >
-              <div>
-                <div className="text-xs font-bold mb-1">WALLET</div>
-                <div className="text-sm font-mono">{label}</div>
-              </div>
-              <span className="text-xs font-bold uppercase tracking-wide">
-                {wrongChain ? "Fix" : connected ? "Manage" : "Connect"}
-              </span>
-            </button>
-          )
-        }}
-      </ConnectButton.Custom>
+      <button
+        onClick={() => setWalletOpen(!walletOpen)}
+        className="h-16 flex items-center justify-between px-6 border-t-2 border-mandinga-black hover:bg-mandinga-gray-100 transition-colors"
+      >
+        <div>
+          <div className="text-xs font-bold mb-1">WALLET</div>
+          <div className="text-sm font-mono">0x7a...c9d</div>
+        </div>
+        <span className="text-lg">{walletOpen ? "▲" : "▼"}</span>
+      </button>
     </aside>
   )
 }
